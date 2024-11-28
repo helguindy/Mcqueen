@@ -13,27 +13,24 @@ float lookAtX = 0.0f, lookAtY = 0.0f, lookAtZ = 0.0f;  // Look-at point
 int viewMode = 0;
 
 // Function to set up the camera
+// Function to set up the camera
 void setCamera() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(70.0, 16.0 / 9.0, 1.0, 50.0);
+	gluPerspective(70.0, 16.0 / 9.0, 1.0, 50.0);  // Adjust perspective view
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Adjust camera position based on view mode
+	// Set camera based on viewMode
 	switch (viewMode) {
-	case 0: // Default perspective view
+	case 0: // First-Person View
+		// Camera is at the player's position, looking at where the player is facing
 		gluLookAt(cameraX, cameraY, cameraZ, lookAtX, lookAtY, lookAtZ, 0.0, 1.0, 0.0);
 		break;
-	case 1: // Top view
-		gluLookAt(0.0, 30.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
-		break;
-	case 2: // Side view
-		gluLookAt(30.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-		break;
-	case 3: // Front view
-		gluLookAt(0.0, 7.0, 30.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	case 1: // Third-Person View
+		// Camera is positioned behind the player with an offset
+		gluLookAt(cameraX + 5.0f, cameraY + 2.0f, cameraZ - 5.0f, lookAtX, lookAtY, lookAtZ, 0.0, 1.0, 0.0);
 		break;
 	}
 }
@@ -334,15 +331,19 @@ void myMotion(int x, int y)
 //=======================================================================
 // Mouse Function
 //=======================================================================
+// Mouse Function
 void myMouse(int button, int state, int x, int y)
 {
-	y = HEIGHT - y;
+	y = HEIGHT - y;  // Adjust y for proper orientation
 
-	if (state == GLUT_DOWN)
-	{
-		cameraZoom = y;
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+		// Toggle between First-Person (0) and Third-Person (1)
+		viewMode = (viewMode == 0) ? 1 : 0;
+		glutPostRedisplay();  // Redraw the scene to update the camera
 	}
 }
+
+
 
 //=======================================================================
 // Reshape Function
