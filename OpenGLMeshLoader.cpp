@@ -8,6 +8,9 @@
 // Camera position and orientation variables
 float cameraX = 0.0f, cameraY = 7.0f, cameraZ = 20.0f; // Initial position
 float lookAtX = 0.0f, lookAtY = 0.0f, lookAtZ = 0.0f;  // Look-at point
+float carPosX = 0.0f;
+float carPosZ = 0.0f;
+
 
 // View mode: 0 = perspective (default), 1 = top view, 2 = side view, 3 = front view
 int viewMode = 0;
@@ -37,6 +40,28 @@ void setCamera() {
 		break;
 	}
 }
+
+void specialKeyboard(int key, int x, int y) {
+	// Handle car movement using the arrow keys
+	const float moveSpeed = 1.0f;  // Speed of the car movement
+	switch (key) {
+	case GLUT_KEY_UP:    // Up arrow key
+		carPosZ -= moveSpeed;  // Move car forward
+		break;
+	case GLUT_KEY_DOWN:  // Down arrow key
+		carPosZ += moveSpeed;  // Move car backward
+		break;
+	case GLUT_KEY_LEFT:  // Left arrow key
+		carPosX -= moveSpeed;  // Move car left
+		break;
+	case GLUT_KEY_RIGHT: // Right arrow key
+		carPosX += moveSpeed;  // Move car right
+		break;
+	}
+	glutPostRedisplay();
+}
+
+
 
 
 
@@ -233,12 +258,9 @@ void RenderGround()
 
 //=======================================================================
 // Display Function
-//=======================================================================
-void myDisplay(void)
-{
+void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setCamera();
-
 
 	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
 	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
@@ -250,18 +272,14 @@ void myDisplay(void)
 
 	// Draw car model
 	glPushMatrix();
-	glTranslatef(0, 0, 0); // Adjust Y translation to lift the car above the ground if necessary
-	glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+	glTranslatef(carPosX, 0.0f, carPosZ); // Update car position with carPosX and carPosZ
+	glRotatef(-90.f, 0, 1, 0);  // Rotate around the X-axis to make the car stand on its wheels
 	glScalef(10.0, 10.0, 10.0);  // Scale the car uniformly to make it bigger
 	model_house.Draw();
 	glPopMatrix();
 
-
-
-
-	//sky box
+	// sky box
 	glPushMatrix();
-
 	GLUquadricObj* qobj;
 	qobj = gluNewQuadric();
 	glTranslated(50, 0, 0);
@@ -272,13 +290,11 @@ void myDisplay(void)
 	gluSphere(qobj, 100, 100, 100);
 	gluDeleteQuadric(qobj);
 
-
 	glPopMatrix();
-
-
 
 	glutSwapBuffers();
 }
+
 
 //=======================================================================
 // Keyboard Function
@@ -402,6 +418,8 @@ void main(int argc, char** argv)
 	glutDisplayFunc(myDisplay);
 
 	glutKeyboardFunc(keyboard);
+
+	glutSpecialFunc(specialKeyboard);
 
 	glutMotionFunc(myMotion);
 
