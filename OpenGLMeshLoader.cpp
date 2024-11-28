@@ -366,7 +366,7 @@ void myDisplay(void) {
 	glPushMatrix();
 	GLUquadricObj* qobj;
 	qobj = gluNewQuadric();
-	glTranslated(50, 0, 0);
+	glTranslated(0, 50, 0);
 	glRotated(90, 1, 0, 1);
 	glBindTexture(GL_TEXTURE_2D, tex);
 	gluQuadricTexture(qobj, true);
