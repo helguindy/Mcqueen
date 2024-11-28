@@ -16,7 +16,38 @@ bool isJumping = false;  // Flag to track if the car is jumping
 float jumpHeight = 2.0f; // The height the car will jump
 float jumpSpeed = 0.1f;  // Speed of the jump
 float initialY = 0.0f;   // Store the initial Y position of the car
+float timeElapsed = 0.0f;    // Tracks time in the game
+float sunIntensity = 0.7f;  // Base intensity of the sunlight
+float intensityVariation = 0.3f; // Amplitude of intensity change
+float timeSpeed = 0.05f;    // Speed of time progression
 
+
+
+void InitCarLights() {
+	// Enable Light Source 1
+	glEnable(GL_LIGHT1);
+
+	// Define Light source 1 properties
+	GLfloat ambient[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+	GLfloat diffuse[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat specular[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+	glLightfv(GL_LIGHT1, GL_AMBIENT, ambient);
+	glLightfv(GL_LIGHT1, GL_DIFFUSE, diffuse);
+	glLightfv(GL_LIGHT1, GL_SPECULAR, specular);
+
+	// Set spotlight properties for headlights
+	GLfloat spotDirection[] = { 0.0f, -0.5f, -1.0f }; // Pointing downward and forward
+	glLightfv(GL_LIGHT1, GL_SPOT_DIRECTION, spotDirection);
+	glLightf(GL_LIGHT1, GL_SPOT_CUTOFF, 30.0f);       // Spotlight cone angle
+	glLightf(GL_LIGHT1, GL_SPOT_EXPONENT, 2.0f);      // Spotlight intensity distribution
+}
+
+// Update the car lights' position and direction
+void UpdateCarLights() {
+	GLfloat lightPosition[] = { carPosX, 1.0f, carPosZ, 1.0f }; // Slightly above the car
+	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition);
+}
 
 
 // View mode: 0 = perspective (default), 1 = top view, 2 = side view, 3 = front view
@@ -213,6 +244,8 @@ void myInit(void)
 	//*******************************************************************************************//
 
 	InitLightSource();
+	InitCarLights();
+
 
 	InitMaterial();
 
@@ -270,21 +303,33 @@ void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setCamera();
 
-	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
+	// Draw Ground
+	RenderGround();
+
+	timeElapsed += timeSpeed;
+	float currentIntensity = sunIntensity + intensityVariation * sin(timeElapsed);
+
+	// Update the sunlight intensity
+	GLfloat lightIntensity[] = { currentIntensity, currentIntensity, currentIntensity, 1.0f };
 	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
-	// Draw Ground
-	RenderGround();
-
 	// Draw car model
+// Assuming your camera is at position (cameraX, cameraZ)
+	float deltaX = cameraX - carPosX;
+	float deltaZ = cameraZ - carPosZ;
+
+	// Calculate the angle between the car and the camera using atan2
+	float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / 3.14159f;
+
 	glPushMatrix();
-	glTranslatef(carPosX, 0.0f, carPosZ); // Update car position with carPosX and carPosZ
-	glRotatef(-90.f, 0, 1, 0);  // Rotate around the X-axis to make the car stand on its wheels
+	glTranslatef(carPosX, 0.0f, carPosZ); // Move the car to its position
+	glRotatef(angleToCamera, 0, 1, 0);  // Rotate the car to face the camera
 	glScalef(10.0, 10.0, 10.0);  // Scale the car uniformly to make it bigger
-	model_house.Draw();
+	model_house.Draw();          // Draw the car
 	glPopMatrix();
+
 
 	// Draw coin model
 	glPushMatrix();
@@ -330,11 +375,14 @@ void myDisplay(void) {
 	gluQuadricNormals(qobj, GL_SMOOTH);
 	gluSphere(qobj, 100, 100, 100);
 	gluDeleteQuadric(qobj);
-
 	glPopMatrix();
+
+	UpdateCarLights();
 
 	glutSwapBuffers();
 }
+
+
 
 
 //=======================================================================
