@@ -108,22 +108,22 @@ void myInit(void)
 	glLoadIdentity();
 
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
-	//*******************************************************************************************//
+	//*//
 	// fovy:			Angle between the bottom and top of the projectors, in degrees.			 //
 	// aspectRatio:		Ratio of width to height of the clipping plane.							 //
 	// zNear and zFar:	Specify the front and back clipping planes distances from camera.		 //
-	//*******************************************************************************************//
+	//*//
 
 	glMatrixMode(GL_MODELVIEW);
 
 	glLoadIdentity();
 
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
-	//*******************************************************************************************//
+	//*//
 	// EYE (ex, ey, ez): defines the location of the camera.									 //
 	// AT (ax, ay, az):	 denotes the direction where the camera is aiming at.					 //
 	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
-	//*******************************************************************************************//
+	//*//
 
 	InitLightSource();
 
@@ -139,31 +139,34 @@ void myInit(void)
 //=======================================================================
 void RenderGround()
 {
-	glDisable(GL_LIGHTING);	// Disable lighting 
+	glDisable(GL_LIGHTING); // Disable lighting for the ground
 
-	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	glColor3f(0.6, 0.6, 0.6); // Dim the ground texture a bit
 
-	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
 
-	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]);	// Bind the ground texture
+	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]); // Bind the ground texture
+
+	// Set a large rectangle to simulate an infinite ground
+	float groundSize = 500.0f;  // Large ground size for the visible area
+	float textureRepeat = 50.0f; // Texture repetition factor
 
 	glPushMatrix();
 	glBegin(GL_QUADS);
-	glNormal3f(0, 1, 0);	// Set quad normal direction.
-	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-	glVertex3f(-20, 0, -20);
-	glTexCoord2f(5, 0);
-	glVertex3f(20, 0, -20);
-	glTexCoord2f(5, 5);
-	glVertex3f(20, 0, 20);
-	glTexCoord2f(0, 5);
-	glVertex3f(-20, 0, 20);
+	glNormal3f(0, 1, 0); // Normal pointing upwards
+
+	// Texture coordinates are set to repeat over the large ground area
+	glTexCoord2f(0, 0); glVertex3f(-groundSize, 0, -groundSize); // Bottom-left
+	glTexCoord2f(textureRepeat, 0); glVertex3f(groundSize, 0, -groundSize); // Bottom-right
+	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(groundSize, 0, groundSize); // Top-right
+	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize, 0, groundSize); // Top-left
+
 	glEnd();
 	glPopMatrix();
 
-	glEnable(GL_LIGHTING);	// Enable lighting again for other entites coming throung the pipeline.
+	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
 
-	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
+	glColor3f(1, 1, 1); // Reset material color to white
 }
 
 //=======================================================================
@@ -183,18 +186,15 @@ void myDisplay(void)
 	// Draw Ground
 	RenderGround();
 
-	// Draw Tree Model
+	// Draw car model
 	glPushMatrix();
-	glTranslatef(10, 0, 0);
-	glScalef(0.7, 0.7, 0.7);
-	model_tree.Draw();
-	glPopMatrix();
-
-	// Draw house Model
-	glPushMatrix();
-	glRotatef(90.f, 1, 0, 0);
+	glTranslatef(0, 0, 0); // Adjust Y translation to lift the car above the ground if necessary
+	glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+	glScalef(10.0, 10.0, 10.0);  // Scale the car uniformly to make it bigger
 	model_house.Draw();
 	glPopMatrix();
+
+
 
 
 	//sky box
