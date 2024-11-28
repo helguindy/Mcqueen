@@ -23,27 +23,24 @@ float initialY = 0.0f;   // Store the initial Y position of the car
 int viewMode = 0;
 
 // Function to set up the camera
+// Function to set up the camera
 void setCamera() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(70.0, 16.0 / 9.0, 1.0, 50.0);
+	gluPerspective(70.0, 16.0 / 9.0, 1.0, 50.0);  // Adjust perspective view
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Adjust camera position based on view mode
+	// Set camera based on viewMode
 	switch (viewMode) {
-	case 0: // Default perspective view
+	case 0: // First-Person View
+		// Camera is at the player's position, looking at where the player is facing
 		gluLookAt(cameraX, cameraY, cameraZ, lookAtX, lookAtY, lookAtZ, 0.0, 1.0, 0.0);
 		break;
-	case 1: // Top view
-		gluLookAt(0.0, 30.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
-		break;
-	case 2: // Side view
-		gluLookAt(30.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-		break;
-	case 3: // Front view
-		gluLookAt(0.0, 7.0, 30.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	case 1: // Third-Person View
+		// Camera is positioned behind the player with an offset
+		gluLookAt(cameraX + 5.0f, cameraY + 2.0f, cameraZ - 5.0f, lookAtX, lookAtY, lookAtZ, 0.0, 1.0, 0.0);
 		break;
 	}
 }
@@ -357,15 +354,13 @@ void myMotion(int x, int y)
 //=======================================================================
 // Mouse Function
 //=======================================================================
-void myMouse(int button, int state, int x, int y) {
-	y = HEIGHT - y;  // Adjust for inverted Y-axis in GLUT
+void myMouse(int button, int state, int x, int y)
+{
+	y = HEIGHT - y;
 
-	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
-		std::cout << "Left click detected!" << std::endl;  // Debug message
-		if (!isJumping) { // Ensure the car is not already jumping
-			isJumping = true;  // Start jumping
-			initialY = 0.0f;   // Set the initial Y position of the car
-		}
+	if (state == GLUT_DOWN)
+	{
+		cameraZoom = y;
 	}
 }
 
