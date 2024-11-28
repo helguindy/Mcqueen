@@ -55,6 +55,7 @@ int viewMode = 0;
 
 // Function to set up the camera
 // Function to set up the camera
+// Function to set up the camera
 void setCamera() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -75,6 +76,7 @@ void setCamera() {
 		break;
 	}
 }
+
 
 void specialKeyboard(int key, int x, int y) {
 	// Handle car movement using the arrow keys
@@ -157,6 +159,8 @@ int cameraZoom = 0;
 Model_3DS model_house;
 Model_3DS model_tree;
 Model_3DS model_coin;
+Model_3DS model_flag;
+
 
 // Textures
 GLTexture tex_ground;
@@ -362,6 +366,14 @@ void myDisplay(void) {
 	model_coin.Draw();
 	glPopMatrix();
 
+	// Draw coin model
+	glPushMatrix();
+	glTranslatef(15, 3, 0); // Adjust Y translation to lift the car above the ground if necessary
+	glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+	glScalef(0.09, 0.09, 0.09);  // Scale the car uniformly to make it bigger
+	model_flag.Draw();
+	glPopMatrix();
+
 	//sky box
 	glPushMatrix();
 	GLUquadricObj* qobj;
@@ -437,15 +449,18 @@ void myMotion(int x, int y)
 //=======================================================================
 // Mouse Function
 //=======================================================================
+// Mouse Function
 void myMouse(int button, int state, int x, int y)
 {
-	y = HEIGHT - y;
+	y = HEIGHT - y;  // Adjust y for proper orientation
 
-	if (state == GLUT_DOWN)
-	{
-		cameraZoom = y;
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+		// Toggle between First-Person (0) and Third-Person (1)
+		viewMode = (viewMode == 0) ? 1 : 0;
+		glutPostRedisplay();  // Redraw the scene to update the camera
 	}
 }
+
 
 
 
@@ -484,6 +499,7 @@ void LoadAssets()
 	model_house.Load("Models/car/car.3DS");
 	model_tree.Load("Models/tree/Tree1.3ds");
 	model_coin.Load("Models/coin.3ds");
+	model_flag.Load("Models/flag.3ds");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
@@ -531,3 +547,49 @@ void main(int argc, char** argv)
 
 	glutMainLoop();
 }
+
+// demiana
+// texture gems cars muds finish line 
+// //coins double score
+//collesion with any collectible and the car 
+// odstecle in environment 1 cars
+// collision with any obstical lose one life  and make a sound effect 
+// player has 3 lives
+// if player lose all lifes game end 
+//set collectables and obstecalles position 
+// 
+// 
+// 
+// 
+// 
+// rahma
+// first and third person view and switch by rigth click
+// camera shake when  the car get left or right for 1 sec 
+// when i exceed the flag speed up
+//display distance 
+//z<100 1k first environment
+//z=100 flage 
+//z>100 display environment 2 
+//z=2oo 2k finish line game win timer stop 
+//  set camera and their animations
+// game win
+// 
+// 
+// 
+// 
+// habiba
+// make two environment 
+// start point 
+//end point
+// car lights
+//environment 1
+//display score increase by one every two seconds
+//timer  1 min
+// game over
+// environment 2 new obsistecale slow dowm for 10 sec and new collectable 
+// 
+
+
+
+
+
