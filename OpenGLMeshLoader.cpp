@@ -536,3 +536,49 @@ void main(int argc, char** argv)
 
 	glutMainLoop();
 }
+
+// demiana
+// texture gems cars muds finish line 
+// //coins double score
+//collesion with any collectible and the car 
+// odstecle in environment 1 cars
+// collision with any obstical lose one life  and make a sound effect 
+// player has 3 lives
+// if player lose all lifes game end 
+//set collectables and obstecalles position 
+// 
+// 
+// 
+// 
+// 
+// rahma
+// first and third person view and switch by rigth click
+// camera shake when  the car get left or right for 1 sec 
+// when i exceed the flag speed up
+//display distance 
+//z<100 1k first environment
+//z=100 flage 
+//z>100 display environment 2 
+//z=2oo 2k finish line game win timer stop 
+//  set camera and their animations
+// game win
+// 
+// 
+// 
+// 
+// habiba
+// make two environment 
+// start point 
+//end point
+// car lights
+//environment 1
+//display score increase by one every two seconds
+//timer  1 min
+// game over
+// environment 2 new obsistecale slow dowm for 10 sec and new collectable 
+// 
+
+
+
+
+
