@@ -2,6 +2,8 @@
 #include "Model_3DS.h"
 #include "GLTexture.h"
 #include <glut.h>
+#include <iostream>
+
 
 #include <cstdio>
 
@@ -10,6 +12,11 @@ float cameraX = 0.0f, cameraY = 7.0f, cameraZ = 20.0f; // Initial position
 float lookAtX = 0.0f, lookAtY = 0.0f, lookAtZ = 0.0f;  // Look-at point
 float carPosX = 0.0f;
 float carPosZ = 0.0f;
+bool isJumping = false;  // Flag to track if the car is jumping
+float jumpHeight = 2.0f; // The height the car will jump
+float jumpSpeed = 0.1f;  // Speed of the jump
+float initialY = 0.0f;   // Store the initial Y position of the car
+
 
 
 // View mode: 0 = perspective (default), 1 = top view, 2 = side view, 3 = front view
@@ -350,15 +357,19 @@ void myMotion(int x, int y)
 //=======================================================================
 // Mouse Function
 //=======================================================================
-void myMouse(int button, int state, int x, int y)
-{
-	y = HEIGHT - y;
+void myMouse(int button, int state, int x, int y) {
+	y = HEIGHT - y;  // Adjust for inverted Y-axis in GLUT
 
-	if (state == GLUT_DOWN)
-	{
-		cameraZoom = y;
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		std::cout << "Left click detected!" << std::endl;  // Debug message
+		if (!isJumping) { // Ensure the car is not already jumping
+			isJumping = true;  // Start jumping
+			initialY = 0.0f;   // Set the initial Y position of the car
+		}
 	}
 }
+
+
 
 //=======================================================================
 // Reshape Function
