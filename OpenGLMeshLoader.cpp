@@ -127,9 +127,11 @@ int cameraZoom = 0;
 // Model Variables
 Model_3DS model_house;
 Model_3DS model_tree;
+Model_3DS model_coin;
 
 // Textures
 GLTexture tex_ground;
+
 
 //=======================================================================
 // Lighting Configuration Function
@@ -284,7 +286,40 @@ void myDisplay(void) {
 	model_house.Draw();
 	glPopMatrix();
 
-	// sky box
+	// Draw coin model
+	glPushMatrix();
+	glTranslatef(15, 5, 0); // Adjust Y translation to lift the car above the ground if necessary
+	glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+	glScalef(1.0, 1.0, 1.0);  // Scale the car uniformly to make it bigger
+	model_coin.Draw();
+	glPopMatrix();
+
+
+	// Draw coin model
+	glPushMatrix();
+	glTranslatef(10, 5, 10); // Adjust Y translation to lift the car above the ground if necessary
+	glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+	glScalef(1.0, 1.0, 1.0);  // Scale the car uniformly to make it bigger
+	model_coin.Draw();
+	glPopMatrix();
+
+	// Draw coin model
+	glPushMatrix();
+	glTranslatef(10, 25, 0); // Adjust Y translation to lift the car above the ground if necessary
+	glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+	glScalef(1.0, 1.0, 1.0);  // Scale the car uniformly to make it bigger
+	model_coin.Draw();
+	glPopMatrix();
+
+	// Draw coin model
+	glPushMatrix();
+	glTranslatef(15, 5, 0); // Adjust Y translation to lift the car above the ground if necessary
+	glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+	glScalef(1.0, 1.0, 1.0);  // Scale the car uniformly to make it bigger
+	model_coin.Draw();
+	glPopMatrix();
+
+	//sky box
 	glPushMatrix();
 	GLUquadricObj* qobj;
 	qobj = gluNewQuadric();
@@ -405,9 +440,11 @@ void LoadAssets()
 	// Loading Model files
 	model_house.Load("Models/car/car.3DS");
 	model_tree.Load("Models/tree/Tree1.3ds");
+	model_coin.Load("Models/coin.3ds");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
+
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
 
