@@ -2,41 +2,70 @@
 #include "Model_3DS.h"
 #include "GLTexture.h"
 #include <glut.h>
+#include <iostream>
+
 
 #include <cstdio>
 
 // Camera position and orientation variables
 float cameraX = 0.0f, cameraY = 7.0f, cameraZ = 20.0f; // Initial position
 float lookAtX = 0.0f, lookAtY = 0.0f, lookAtZ = 0.0f;  // Look-at point
+float carPosX = 0.0f;
+float carPosZ = 0.0f;
+bool isJumping = false;  // Flag to track if the car is jumping
+float jumpHeight = 2.0f; // The height the car will jump
+float jumpSpeed = 0.1f;  // Speed of the jump
+float initialY = 0.0f;   // Store the initial Y position of the car
+
+
 
 // View mode: 0 = perspective (default), 1 = top view, 2 = side view, 3 = front view
 int viewMode = 0;
 
 // Function to set up the camera
+// Function to set up the camera
 void setCamera() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(70.0, 16.0 / 9.0, 1.0, 50.0);
+	gluPerspective(70.0, 16.0 / 9.0, 1.0, 50.0);  // Adjust perspective view
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Adjust camera position based on view mode
+	// Set camera based on viewMode
 	switch (viewMode) {
-	case 0: // Default perspective view
+	case 0: // First-Person View
+		// Camera is at the player's position, looking at where the player is facing
 		gluLookAt(cameraX, cameraY, cameraZ, lookAtX, lookAtY, lookAtZ, 0.0, 1.0, 0.0);
 		break;
-	case 1: // Top view
-		gluLookAt(0.0, 30.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
-		break;
-	case 2: // Side view
-		gluLookAt(30.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-		break;
-	case 3: // Front view
-		gluLookAt(0.0, 7.0, 30.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	case 1: // Third-Person View
+		// Camera is positioned behind the player with an offset
+		gluLookAt(cameraX + 5.0f, cameraY + 2.0f, cameraZ - 5.0f, lookAtX, lookAtY, lookAtZ, 0.0, 1.0, 0.0);
 		break;
 	}
 }
+
+void specialKeyboard(int key, int x, int y) {
+	// Handle car movement using the arrow keys
+	const float moveSpeed = 1.0f;  // Speed of the car movement
+	switch (key) {
+	case GLUT_KEY_UP:    // Up arrow key
+		carPosZ -= moveSpeed;  // Move car forward
+		break;
+	case GLUT_KEY_DOWN:  // Down arrow key
+		carPosZ += moveSpeed;  // Move car backward
+		break;
+	case GLUT_KEY_LEFT:  // Left arrow key
+		carPosX -= moveSpeed;  // Move car left
+		break;
+	case GLUT_KEY_RIGHT: // Right arrow key
+		carPosX += moveSpeed;  // Move car right
+		break;
+	}
+	glutPostRedisplay();
+}
+
+
 
 
 
@@ -235,12 +264,9 @@ void RenderGround()
 
 //=======================================================================
 // Display Function
-//=======================================================================
-void myDisplay(void)
-{
+void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setCamera();
-
 
 	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
 	GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
@@ -252,8 +278,8 @@ void myDisplay(void)
 
 	// Draw car model
 	glPushMatrix();
-	glTranslatef(0, 0, 0); // Adjust Y translation to lift the car above the ground if necessary
-	glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+	glTranslatef(carPosX, 0.0f, carPosZ); // Update car position with carPosX and carPosZ
+	glRotatef(-90.f, 0, 1, 0);  // Rotate around the X-axis to make the car stand on its wheels
 	glScalef(10.0, 10.0, 10.0);  // Scale the car uniformly to make it bigger
 	model_house.Draw();
 	glPopMatrix();
@@ -293,7 +319,6 @@ void myDisplay(void)
 
 	//sky box
 	glPushMatrix();
-
 	GLUquadricObj* qobj;
 	qobj = gluNewQuadric();
 	glTranslated(50, 0, 0);
@@ -304,13 +329,11 @@ void myDisplay(void)
 	gluSphere(qobj, 100, 100, 100);
 	gluDeleteQuadric(qobj);
 
-
 	glPopMatrix();
-
-
 
 	glutSwapBuffers();
 }
+
 
 //=======================================================================
 // Keyboard Function
@@ -376,6 +399,8 @@ void myMouse(int button, int state, int x, int y)
 	}
 }
 
+
+
 //=======================================================================
 // Reshape Function
 //=======================================================================
@@ -436,6 +461,8 @@ void main(int argc, char** argv)
 	glutDisplayFunc(myDisplay);
 
 	glutKeyboardFunc(keyboard);
+
+	glutSpecialFunc(specialKeyboard);
 
 	glutMotionFunc(myMotion);
 
