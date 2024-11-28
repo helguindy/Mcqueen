@@ -3,6 +3,60 @@
 #include "GLTexture.h"
 #include <glut.h>
 
+#include <cstdio>
+
+// Camera position and orientation variables
+float cameraX = 0.0f, cameraY = 7.0f, cameraZ = 20.0f; // Initial position
+float lookAtX = 0.0f, lookAtY = 0.0f, lookAtZ = 0.0f;  // Look-at point
+
+// View mode: 0 = perspective (default), 1 = top view, 2 = side view, 3 = front view
+int viewMode = 0;
+
+// Function to set up the camera
+void setCamera() {
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(70.0, 16.0 / 9.0, 1.0, 50.0);
+
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	// Adjust camera position based on view mode
+	switch (viewMode) {
+	case 0: // Default perspective view
+		gluLookAt(cameraX, cameraY, cameraZ, lookAtX, lookAtY, lookAtZ, 0.0, 1.0, 0.0);
+		break;
+	case 1: // Top view
+		gluLookAt(0.0, 30.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
+		break;
+	case 2: // Side view
+		gluLookAt(30.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+		break;
+	case 3: // Front view
+		gluLookAt(0.0, 7.0, 30.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+		break;
+	}
+}
+
+
+
+
+// Initialization function
+void init() {
+	glEnable(GL_DEPTH_TEST);
+
+	// Set up lighting (optional)
+	GLfloat ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f };
+	GLfloat diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	GLfloat lightPosition[] = { -7.0f, 10.0f, 10.0f, 0.0f };
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
+}
+
+
 int WIDTH = 1280;
 int HEIGHT = 720;
 
@@ -101,37 +155,17 @@ void InitMaterial()
 //=======================================================================
 void myInit(void)
 {
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-
-	glMatrixMode(GL_PROJECTION);
-
-	glLoadIdentity();
-
-	gluPerspective(fovy, aspectRatio, zNear, zFar);
-	//*******************************************************************************************//
-	// fovy:			Angle between the bottom and top of the projectors, in degrees.			 //
-	// aspectRatio:		Ratio of width to height of the clipping plane.							 //
-	// zNear and zFar:	Specify the front and back clipping planes distances from camera.		 //
-	//*******************************************************************************************//
-
-	glMatrixMode(GL_MODELVIEW);
-
-	glLoadIdentity();
-
-	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
-	//*******************************************************************************************//
-	// EYE (ex, ey, ez): defines the location of the camera.									 //
-	// AT (ax, ay, az):	 denotes the direction where the camera is aiming at.					 //
-	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
-	//*******************************************************************************************//
-
-	InitLightSource();
-
-	InitMaterial();
-
 	glEnable(GL_DEPTH_TEST);
 
-	glEnable(GL_NORMALIZE);
+	// Set up lighting (optional)
+	GLfloat ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f };
+	GLfloat diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	GLfloat lightPosition[] = { -7.0f, 10.0f, 10.0f, 0.0f };
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
+	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+	glEnable(GL_LIGHTING);
+	glEnable(GL_LIGHT0);
 }
 
 //=======================================================================
@@ -139,31 +173,34 @@ void myInit(void)
 //=======================================================================
 void RenderGround()
 {
-	glDisable(GL_LIGHTING);	// Disable lighting 
+	glDisable(GL_LIGHTING); // Disable lighting for the ground
 
-	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	glColor3f(0.6, 0.6, 0.6); // Dim the ground texture a bit
 
-	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
 
-	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]);	// Bind the ground texture
+	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]); // Bind the ground texture
+
+	// Set a large rectangle to simulate an infinite ground
+	float groundSize = 500.0f;  // Large ground size for the visible area
+	float textureRepeat = 50.0f; // Texture repetition factor
 
 	glPushMatrix();
 	glBegin(GL_QUADS);
-	glNormal3f(0, 1, 0);	// Set quad normal direction.
-	glTexCoord2f(0, 0);		// Set tex coordinates ( Using (0,0) -> (5,5) with texture wrapping set to GL_REPEAT to simulate the ground repeated grass texture).
-	glVertex3f(-20, 0, -20);
-	glTexCoord2f(5, 0);
-	glVertex3f(20, 0, -20);
-	glTexCoord2f(5, 5);
-	glVertex3f(20, 0, 20);
-	glTexCoord2f(0, 5);
-	glVertex3f(-20, 0, 20);
+	glNormal3f(0, 1, 0); // Normal pointing upwards
+
+	// Texture coordinates are set to repeat over the large ground area
+	glTexCoord2f(0, 0); glVertex3f(-groundSize, 0, -groundSize); // Bottom-left
+	glTexCoord2f(textureRepeat, 0); glVertex3f(groundSize, 0, -groundSize); // Bottom-right
+	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(groundSize, 0, groundSize); // Top-right
+	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize, 0, groundSize); // Top-left
+
 	glEnd();
 	glPopMatrix();
 
-	glEnable(GL_LIGHTING);	// Enable lighting again for other entites coming throung the pipeline.
+	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
 
-	glColor3f(1, 1, 1);	// Set material back to white instead of grey used for the ground texture.
+	glColor3f(1, 1, 1); // Reset material color to white
 }
 
 //=======================================================================
@@ -172,7 +209,7 @@ void RenderGround()
 void myDisplay(void)
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	setCamera();
 
 
 	GLfloat lightIntensity[] = { 0.7, 0.7, 0.7, 1.0f };
@@ -183,18 +220,15 @@ void myDisplay(void)
 	// Draw Ground
 	RenderGround();
 
-	// Draw Tree Model
+	// Draw car model
 	glPushMatrix();
-	glTranslatef(10, 0, 0);
-	glScalef(0.7, 0.7, 0.7);
-	model_tree.Draw();
-	glPopMatrix();
-
-	// Draw house Model
-	glPushMatrix();
-	glRotatef(90.f, 1, 0, 0);
+	glTranslatef(0, 0, 0); // Adjust Y translation to lift the car above the ground if necessary
+	glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+	glScalef(10.0, 10.0, 10.0);  // Scale the car uniformly to make it bigger
 	model_house.Draw();
 	glPopMatrix();
+
+
 
 
 	//sky box
@@ -221,26 +255,24 @@ void myDisplay(void)
 //=======================================================================
 // Keyboard Function
 //=======================================================================
-void myKeyboard(unsigned char button, int x, int y)
-{
-	switch (button)
-	{
-	case 'w':
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+// Function to handle key presses for camera control
+void keyboard(unsigned char key, int x, int y) {
+	switch (key) {
+	case '1': // Default perspective view
+		viewMode = 0;
 		break;
-	case 'r':
-		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+	case '2': // Top view
+		viewMode = 1;
 		break;
-	case 27:
-		exit(0);
+	case '3': // Side view
+		viewMode = 2;
 		break;
-	default:
+	case '4': // Front view
+		viewMode = 3;
 		break;
 	}
-
 	glutPostRedisplay();
 }
-
 //=======================================================================
 // Motion Function
 //=======================================================================
@@ -341,7 +373,7 @@ void main(int argc, char** argv)
 
 	glutDisplayFunc(myDisplay);
 
-	glutKeyboardFunc(myKeyboard);
+	glutKeyboardFunc(keyboard);
 
 	glutMotionFunc(myMotion);
 
