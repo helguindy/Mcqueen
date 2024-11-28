@@ -155,6 +155,34 @@ void InitMaterial()
 //=======================================================================
 void myInit(void)
 {
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+
+	glMatrixMode(GL_PROJECTION);
+
+	glLoadIdentity();
+
+	gluPerspective(fovy, aspectRatio, zNear, zFar);
+	//*******************************************************************************************//
+	// fovy:			Angle between the bottom and top of the projectors, in degrees.			 //
+	// aspectRatio:		Ratio of width to height of the clipping plane.							 //
+	// zNear and zFar:	Specify the front and back clipping planes distances from camera.		 //
+	//*******************************************************************************************//
+
+	glMatrixMode(GL_MODELVIEW);
+
+	glLoadIdentity();
+
+	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
+	//*******************************************************************************************//
+	// EYE (ex, ey, ez): defines the location of the camera.									 //
+	// AT (ax, ay, az):	 denotes the direction where the camera is aiming at.					 //
+	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
+	//*******************************************************************************************//
+
+	InitLightSource();
+
+	InitMaterial();
+
 	glEnable(GL_DEPTH_TEST);
 
 	// Set up lighting (optional)
@@ -173,13 +201,13 @@ void myInit(void)
 //=======================================================================
 void RenderGround()
 {
-	glDisable(GL_LIGHTING); // Disable lighting for the ground
+	glDisable(GL_LIGHTING);	// Disable lighting 
 
-	glColor3f(0.6, 0.6, 0.6); // Dim the ground texture a bit
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
-	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
+	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
-	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]); // Bind the ground texture
+	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]);	// Bind the ground texture
 
 	// Set a large rectangle to simulate an infinite ground
 	float groundSize = 500.0f;  // Large ground size for the visible area
