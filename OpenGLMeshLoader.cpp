@@ -24,6 +24,7 @@ int viewMode = 0;
 
 // Function to set up the camera
 // Function to set up the camera
+// Function to set up the camera
 void setCamera() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -44,6 +45,7 @@ void setCamera() {
 		break;
 	}
 }
+
 
 void specialKeyboard(int key, int x, int y) {
 	// Handle car movement using the arrow keys
@@ -354,15 +356,18 @@ void myMotion(int x, int y)
 //=======================================================================
 // Mouse Function
 //=======================================================================
+// Mouse Function
 void myMouse(int button, int state, int x, int y)
 {
-	y = HEIGHT - y;
+	y = HEIGHT - y;  // Adjust y for proper orientation
 
-	if (state == GLUT_DOWN)
-	{
-		cameraZoom = y;
+	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
+		// Toggle between First-Person (0) and Third-Person (1)
+		viewMode = (viewMode == 0) ? 1 : 0;
+		glutPostRedisplay();  // Redraw the scene to update the camera
 	}
 }
+
 
 
 
