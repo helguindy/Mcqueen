@@ -3,7 +3,8 @@
 #include "GLTexture.h"
 #include <glut.h>
 #include <iostream>
-
+#include <string>
+#include <sstream>
 
 #include <cstdio>
 
@@ -11,6 +12,7 @@
 float cameraX = 0.0f, cameraY = 7.0f, cameraZ = 20.0f; // Initial position
 float lookAtX = 0.0f, lookAtY = 0.0f, lookAtZ = 0.0f;  // Look-at point
 float carPosX = 0.0f;
+float carPosY = 0.0f;
 float carPosZ = 0.0f;
 bool isJumping = false;  // Flag to track if the car is jumping
 float jumpHeight = 2.0f; // The height the car will jump
@@ -21,7 +23,41 @@ float sunIntensity = 0.7f;  // Base intensity of the sunlight
 float intensityVariation = 0.3f; // Amplitude of intensity change
 float timeSpeed = 0.05f;    // Speed of time progression
 
+int timer = 60; // Countdown timer in seconds
+int score = 0;  // Player score
 
+void updateGame(int value) {
+	if (timer > 0) {
+		timer--; // Decrement timer by 1 second
+	}
+	if (timer % 2 == 0) {
+		score += 10; // Increase score by 10 every 2 seconds
+	}
+
+	// Request a redraw to update the displayed timer and score
+	glutPostRedisplay();
+
+	// Register the timer callback again for the next second
+	glutTimerFunc(1000, updateGame, 0);
+}
+
+void renderText(float x, float y, const std::string& text) {
+	glColor3f(1.0f, 1.0f, 1.0f); // Set text color to white
+	glRasterPos2f(x, y);
+	for (char c : text) {
+		glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, c);
+	}
+}
+
+// Update function to decrement timer and increment score
+void update(int value) {
+	if (timer > 0) {
+		timer--; // Decrement the timer
+		score++; // Increment the score for demonstration
+	}
+	glutPostRedisplay(); // Redraw the screen
+	glutTimerFunc(1000, update, 0); // Call this function every second
+}
 
 void InitCarLights() {
 	// Enable Light Source 1
@@ -79,24 +115,29 @@ void setCamera() {
 
 
 void specialKeyboard(int key, int x, int y) {
-	// Handle car movement using the arrow keys
-	const float moveSpeed = 1.0f;  // Speed of the car movement
+	const float moveSpeed = 1.1f; // Speed of the car movement
+
 	switch (key) {
 	case GLUT_KEY_UP:    // Up arrow key
-		carPosZ -= moveSpeed;  // Move car forward
+		carPosZ -= moveSpeed; // Move car forward along the Z-axis
 		break;
+
 	case GLUT_KEY_DOWN:  // Down arrow key
-		carPosZ += moveSpeed;  // Move car backward
+		carPosZ += moveSpeed; // Move car backward along the Z-axis
 		break;
+
 	case GLUT_KEY_LEFT:  // Left arrow key
-		carPosX -= moveSpeed;  // Move car left
+		carPosX -= moveSpeed; // Move car left along the X-axis
 		break;
+
 	case GLUT_KEY_RIGHT: // Right arrow key
-		carPosX += moveSpeed;  // Move car right
+		carPosX += moveSpeed; // Move car right along the X-axis
 		break;
 	}
-	glutPostRedisplay();
+
+	glutPostRedisplay(); // Request display update after movement
 }
+
 
 
 
@@ -317,6 +358,7 @@ void myDisplay(void) {
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
+	
 	// Draw car model
 // Assuming your camera is at position (cameraX, cameraZ)
 	float deltaX = cameraX - carPosX;
@@ -325,9 +367,12 @@ void myDisplay(void) {
 	// Calculate the angle between the car and the camera using atan2
 	float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / 3.14159f;
 
+	float modelOffset = 180.0f; // Adjust this value if needed (try 90, 180, or 270)
+
 	glPushMatrix();
-	glTranslatef(carPosX, 0.0f, carPosZ); // Move the car to its position
-	glRotatef(angleToCamera, 0, 1, 0);  // Rotate the car to face the camera
+	glTranslatef(carPosX, carPosY, carPosZ); // Move the car to its position
+	glRotatef(angleToCamera + modelOffset, 0.0f, 1.0f, 0.0f);  // Rotate the car to face the camera
+
 	glScalef(10.0, 10.0, 10.0);  // Scale the car uniformly to make it bigger
 	model_house.Draw();          // Draw the car
 	glPopMatrix();
@@ -388,6 +433,18 @@ void myDisplay(void) {
 	glPopMatrix();
 
 	UpdateCarLights();
+
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluOrtho2D(0.0, 800.0, 0.0, 600.0); // Adjust based on window dimensions
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+
+	std::ostringstream timerText, scoreText;
+	timerText << "Timer: " << timer;
+	scoreText << "Score: " << score;
+	renderText(10, 570, timerText.str()); // Timer on the left
+	renderText(700, 570, scoreText.str()); // Score on the right
 
 	glutSwapBuffers();
 }
@@ -523,6 +580,7 @@ void main(int argc, char** argv)
 	glutCreateWindow(title);
 
 	glutDisplayFunc(myDisplay);
+	glutTimerFunc(1000, update, 0); // Start the update loop
 
 	glutKeyboardFunc(keyboard);
 
