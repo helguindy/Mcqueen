@@ -201,6 +201,8 @@ Model_3DS model_house;
 Model_3DS model_tree;
 Model_3DS model_coin;
 Model_3DS model_flag;
+Model_3DS model_taxi;
+
 
 
 // Textures
@@ -411,12 +413,20 @@ void myDisplay(void) {
 	model_coin.Draw();
 	glPopMatrix();
 
-	// Draw coin model
+	// Draw flag model
 	glPushMatrix();
 	glTranslatef(15, 3, 0); // Adjust Y translation to lift the car above the ground if necessary
 	glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
 	glScalef(0.09, 0.09, 0.09);  // Scale the car uniformly to make it bigger
 	model_flag.Draw();
+	glPopMatrix();
+
+	// Draw flag model
+	glPushMatrix();
+	glTranslatef(5, 3, 0); // Adjust Y translation to lift the car above the ground if necessary
+	glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+	glScalef(0.059, 0.059, 0.059);  // Scale the car uniformly to make it bigger
+	model_taxi.Draw();
 	glPopMatrix();
 
 	//sky box
@@ -557,6 +567,7 @@ void LoadAssets()
 	model_tree.Load("Models/tree/Tree1.3ds");
 	model_coin.Load("Models/coin.3ds");
 	model_flag.Load("Models/flag.3ds");
+	model_taxi.Load("Models/taxi.3ds");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
