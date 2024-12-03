@@ -8,6 +8,13 @@
 
 #include <cstdio>
 
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+int lives = 3;
+
 // Camera position and orientation variables
 float cameraX = 0.0f, cameraY = 7.0f, cameraZ = 20.0f; // Initial position
 float lookAtX = 0.0f, lookAtY = 0.0f, lookAtZ = 0.0f;  // Look-at point
@@ -248,6 +255,7 @@ Model_3DS model_tree;
 Model_3DS model_coin;
 Model_3DS model_flag;
 Model_3DS model_taxi;
+Model_3DS model_redcar;
 
 
 
@@ -399,6 +407,77 @@ void renderGameOverScreen() {
 
 	glFlush(); // Ensure everything is drawn
 }
+void renderLives() {
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glColor3f(1.0f, 0.0f, 0.0f);
+
+	float scale = 1.0f;  // Reduced from 20.0f
+	float spacing = 50.0f; // Reduced from 50.0f
+	float baseX = 30.0f;  // Reduced from 50.0f
+	float baseY = HEIGHT - 30.0f; // Reduced from 50.0f
+
+	for (int i = 0; i < lives; i++) {
+		float x = baseX + (i * spacing);
+		float y = baseY;
+
+		glBegin(GL_POLYGON);
+		for (float angle = 0; angle < 2 * M_PI; angle += 0.1) {
+			float px = x + scale * 16 * pow(sin(angle), 3);
+			float py = y + scale * (13 * cos(angle) - 5 * cos(2 * angle) - 2 * cos(3 * angle) - cos(4 * angle));
+			glVertex2f(px, py);
+		}
+		glEnd();
+	}
+
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
+}
+
+
+// Add these global variables at the top
+float distance(float x1, float z1, float x2, float z2) {
+	return sqrt(pow(x2 - x1, 2) + pow(z2 - z1, 2));
+}
+
+// Modify checkCollisions():
+void checkCollisions() {
+	if (gameOver) return;
+
+	float taxiX = 5, taxiZ = 0;
+	//float toktokX = -10, toktokZ = 0;
+	float collisionRadius = 3.0f;
+
+	if (distance(carPosX, carPosZ, taxiX, taxiZ) < collisionRadius) {
+		if (lives > 0) {
+			lives--;
+			carPosX = 0;
+			carPosZ = 0;
+			if (lives == 0) {
+				gameOver = true;
+			}
+		}
+	}
+
+	
+}
+
+
+
 
 
 //=======================================================================
@@ -487,24 +566,33 @@ void myDisplay(void) {
 
 		// Draw flag model
 		glPushMatrix();
-		glTranslatef(5, 3, 0); // Adjust Y translation to lift the car above the ground if necessary
+		glTranslatef(5, 0, 1); // Adjust Y translation to lift the car above the ground if necessary
 		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
 		glScalef(0.059, 0.059, 0.059);  // Scale the car uniformly to make it bigger
 		model_taxi.Draw();
 		glPopMatrix();
 
-		//sky box
+		// Draw redcar model
 		glPushMatrix();
-		GLUquadricObj* qobj;
-		qobj = gluNewQuadric();
-		glTranslated(0, 50, 0);
-		glRotated(90, 1, 0, 1);
-		glBindTexture(GL_TEXTURE_2D, tex);
-		gluQuadricTexture(qobj, true);
-		gluQuadricNormals(qobj, GL_SMOOTH);
-		gluSphere(qobj, 100, 100, 100);
-		gluDeleteQuadric(qobj);
+		glTranslatef(5, 0, 1); // Adjust Y translation to lift the car above the ground if necessary
+		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		glScalef(0.059, 0.059, 0.059);  // Scale the car uniformly to make it bigger
+		model_redcar.Draw();
 		glPopMatrix();
+
+
+		//sky box
+		//glPushMatrix();
+		//GLUquadricObj* qobj;
+		//qobj = gluNewQuadric();
+		//glTranslated(0, 50, 0);
+		//glRotated(90, 1, 0, 1);
+		//glBindTexture(GL_TEXTURE_2D, tex);
+		//gluQuadricTexture(qobj, true);
+		//gluQuadricNormals(qobj, GL_SMOOTH);
+		//gluSphere(qobj, 100, 100, 100);
+		//gluDeleteQuadric(qobj);
+		//glPopMatrix();
 
 		UpdateCarLights();
 
@@ -523,9 +611,38 @@ void myDisplay(void) {
 
 	}
 
+	if (gameOver) {
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
+
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2);
+		char* message = "Game Over!";
+		for (char* c = message; *c != '\0'; c++) {
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+		}
+
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_LIGHTING);
+	}
+	renderLives();
+	checkCollisions();
+
 	glutSwapBuffers();
 }
-
 
 
 
@@ -635,11 +752,12 @@ void LoadAssets()
 	model_coin.Load("Models/coin.3ds");
 	model_flag.Load("Models/flag.3ds");
 	model_taxi.Load("Models/taxi.3ds");
+	model_redcar.Load("Models/redcar/redcar.3DS");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
 
-	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
+	//loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
 
 //=======================================================================
