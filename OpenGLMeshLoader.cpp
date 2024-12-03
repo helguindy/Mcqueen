@@ -5,7 +5,8 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-
+#include <Windows.h>
+#include <mmsystem.h>
 #include <cstdio>
 
 
@@ -13,7 +14,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-int lives = 3;
+int lives = 6;
 
 // Camera position and orientation variables
 float cameraX = 0.0f, cameraY = 7.0f, cameraZ = 20.0f; // Initial position
@@ -35,6 +36,18 @@ bool timeOver = false;
 
 int timer = 60; // Countdown timer in seconds
 int score = 0;  // Player score
+
+void playCollisionSound() {
+	PlaySound(TEXT("C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\collectables.wav"), NULL, SND_ASYNC);
+}
+
+void playBackgroundMusic() {
+	// Open the background music file
+	mciSendString("open \"C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\bgsong.wav\" type mpegvideo alias bgMusic", NULL, 0, NULL);
+
+	// Play the music in a loop
+	mciSendString("play bgMusic repeat", NULL, 0, NULL);
+}
 
 void updateGame(int value) {
 	if (timer > 0) {
@@ -125,35 +138,25 @@ int viewMode = 0;
 void setCamera() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(70.0, 16.0 / 9.0, 1.0, 50.0); // Perspective view
+	gluPerspective(70.0, 16.0 / 9.0, 1.0, 50.0);
 
-	// Adjust the camera based on the view mode
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Assuming the car model's position is at (carPosX, carPosY, carPosZ)
-	// Adjust based on the chosen view mode:
+	// Adjust camera position based on view mode
+	
 	switch (viewMode) {
-	case 0: // First-Person View (Inside the car)
-		// The camera will be placed inside the car, looking out from the front
-		// Adjust this based on your car's internal structure or seat position
-		gluLookAt(carPosX, carPosY + 20.0f, carPosZ,    // Camera position inside the car
-			carPosX, carPosY, carPosZ - 1.0f,  // Look at the front of the car
-			0.0, 1.0, 0.0);              // Up vector
+	case 0: // Default perspective view
+		gluLookAt(cameraX, cameraY, cameraZ, lookAtX, lookAtY, lookAtZ, 0.0, 1.0, 0.0);
 		break;
-
-	case 1: // Third-Person View (Above and behind the car)
-		// Camera positioned behind and slightly above the car to view the back
-		gluLookAt(carPosX + 20.0f, carPosY + 4.0f, carPosZ - 17.0f,  // Camera position above and behind the car
-			carPosX, carPosY, carPosZ,               // Look at the car's center (back)
-			0.0, 1.0, 0.0);                         // Up vector
+	case 1: // Top view
+		gluLookAt(0.0, 30.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
 		break;
-
-	default:
-		// Default to first-person view if viewMode is invalid
-		gluLookAt(carPosX, carPosY, carPosZ,   // Camera position
-			carPosX, carPosY, carPosZ - 1.0f, // Look at the front of the car
-			0.0, 1.0, 0.0); // Up vector
+	case 2: // Side view
+		gluLookAt(30.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+		break;
+	case 3: // Front view
+		gluLookAt(0.0, 7.0, 30.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 		break;
 	}
 }
@@ -164,20 +167,21 @@ void setCamera() {
 
 void specialKeyboard(int key, int x, int y) {
 	const float moveSpeed = 1.1f; // Speed of the car movement
-
-	switch (key) {
-	case GLUT_KEY_UP:    // Up arrow key
-		carPosZ -= moveSpeed; // Move car forward along the Z-axis
-		break;
-	case GLUT_KEY_DOWN:  // Down arrow key
-		carPosZ += moveSpeed; // Move car backward along the Z-axis
-		break;
-	case GLUT_KEY_LEFT:  // Left arrow key
-		carPosX -= moveSpeed; // Move car left along the X-axis
-		break;
-	case GLUT_KEY_RIGHT: // Right arrow key
-		carPosX += moveSpeed; // Move car right along the X-axis
-		break;
+	if (!timeOver) {
+		switch (key) {
+		case GLUT_KEY_UP:    // Up arrow key
+			carPosZ -= moveSpeed; // Move car forward along the Z-axis
+			break;
+		case GLUT_KEY_DOWN:  // Down arrow key
+			carPosZ += moveSpeed; // Move car backward along the Z-axis
+			break;
+		case GLUT_KEY_LEFT:  // Left arrow key
+			carPosX -= moveSpeed; // Move car left along the X-axis
+			break;
+		case GLUT_KEY_RIGHT: // Right arrow key
+			carPosX += moveSpeed; // Move car right along the X-axis
+			break;
+		}
 	}
 
 	setCamera(); // Update the camera to follow the car
@@ -326,22 +330,22 @@ void myInit(void)
 	glLoadIdentity();
 
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
-	//***********//
+	//*//
 	// fovy:			Angle between the bottom and top of the projectors, in degrees.			 //
 	// aspectRatio:		Ratio of width to height of the clipping plane.							 //
 	// zNear and zFar:	Specify the front and back clipping planes distances from camera.		 //
-	//***********//
+	//*//
 
 	glMatrixMode(GL_MODELVIEW);
 
 	glLoadIdentity();
 
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
-	//***********//
+	//*//
 	// EYE (ex, ey, ez): defines the location of the camera.									 //
 	// AT (ax, ay, az):	 denotes the direction where the camera is aiming at.					 //
 	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
-	//***********//
+	//*//
 
 	InitLightSource();
 	InitCarLights();
@@ -404,7 +408,7 @@ void renderGameOverScreen() {
 	glColor3f(1.0f, 0.0f, 0.0f); // Red "Game Over" text
 
 	// Render "Game Over" message
-	renderText(0.4f, 0.5f, "GAME OVER", 0.002f);
+	renderText(0.4f, 0.5f, " ", 0.002f);
 
 	glFlush(); // Ensure everything is drawn
 }
@@ -465,6 +469,7 @@ void checkCollisions() {
 
 	if (distance(carPosX, carPosZ, taxiX, taxiZ) < collisionRadius) {
 		if (lives > 0) {
+			playCollisionSound();
 			lives--;
 			carPosX = 0;
 			carPosZ = 0;
@@ -682,20 +687,22 @@ void myDisplay(void) {
 //=======================================================================
 // Function to handle key presses for camera control
 void keyboard(unsigned char key, int x, int y) {
+	const float moveStep = 1.0f;
+
 	switch (key) {
-	case '1': // Default perspective view
-		viewMode = 0;
-		break;
-	case '2': // Top view
-		viewMode = 1;
-		break;
-	case '3': // Side view
-		viewMode = 2;
-		break;
-	case '4': // Front view
-		viewMode = 3;
-		break;
+	case 'w': cameraZ -= moveStep; break;
+	case 's': cameraZ += moveStep; break;
+	case 'a': cameraX -= moveStep; break;
+	case 'd': cameraX += moveStep; break;
+	case 'q': cameraY += moveStep; break;
+	case 'e': cameraY -= moveStep; break;
+	case '1': viewMode = 0; break;
+	case '2': viewMode = 1; break;
+	case '3': viewMode = 2; break;
+	case '4': viewMode = 3; break;
+	case 27: exit(0); break;
 	}
+
 	glutPostRedisplay();
 }
 //=======================================================================
@@ -796,6 +803,7 @@ void LoadAssets()
 //=======================================================================
 void main(int argc, char** argv)
 {
+
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -805,7 +813,7 @@ void main(int argc, char** argv)
 	glutInitWindowPosition(100, 150);
 
 	glutCreateWindow(title);
-
+	playBackgroundMusic();
 	glutDisplayFunc(myDisplay);
 	glutTimerFunc(1000, update, 0); // Start the update loop
 
@@ -838,9 +846,9 @@ void main(int argc, char** argv)
 // //coins double score
 //collesion with any collectible and the car 
 // odstecle in environment 1 cars
-// collision with any obstical lose one life  and make a sound effect 
-// player has 3 lives
-// if player lose all lifes game end 
+// collision with any obstical lose one life  and make a sound effect #################################
+// player has 3 lives ############################################################
+// if player lose all lifes game end  ##################################################################
 //set collectables and obstecalles position 
 // 
 // 
@@ -871,5 +879,5 @@ void main(int argc, char** argv)
 //display score increase by one every two seconds ####################################
 //timer  1 min ##########################################
 // game over #######################################
-// environment 2 new obsistecale slow dowm for 10 sec and new collectable 
+// environment 2 new obsistecale slow dowm for 10 sec and new collectable  
 //
