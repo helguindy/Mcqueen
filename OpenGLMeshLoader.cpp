@@ -41,6 +41,9 @@ bool timeOver = false;
 float normalSpeed = 1.0f; // Normal speed of the car
 float increasedSpeed = 2.2f; // Increased speed after Z = 600
 float moveSpeed = normalSpeed; // Initial move speed
+const int numCoins = 10; // Number of coins
+float coinPositions[numCoins][3]; // Array to store coin positions (X, Y, Z)
+
 
 
 
@@ -97,6 +100,16 @@ void renderText(float x, float y, const std::string& text, float scale) {
 	glPopMatrix();
 	glEnable(GL_LIGHTING);
 }
+
+void generateCoinPositions() {
+	for (int i = 0; i < numCoins; ++i) {
+		coinPositions[i][0] = static_cast<float>(rand() % 41 - 30); // X: -30 to 30
+		coinPositions[i][1] = 1.0f;                                // Y: 0
+		coinPositions[i][2] = static_cast<float>(rand() % 1201);    // Z: 0 to 1200
+	}
+}
+
+
 
 
 // Update function to decrement timer and increment score
@@ -585,37 +598,11 @@ void myDisplay(void) {
 
 
 		// Draw coin model
-		glPushMatrix();
-		glTranslatef(15, 5, 0); // Adjust Y translation to lift the car above the ground if necessary
-		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		glScalef(1.0, 1.0, 1.0);  // Scale the car uniformly to make it bigger
-		model_coin.Draw();
-		glPopMatrix();
-
-
-		// Draw coin model
-		glPushMatrix();
-		glTranslatef(10, 5, 10); // Adjust Y translation to lift the car above the ground if necessary
-		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		glScalef(1.0, 1.0, 1.0);  // Scale the car uniformly to make it bigger
-		model_coin.Draw();
-		glPopMatrix();
-
-		// Draw coin model
-		glPushMatrix();
-		glTranslatef(10, 25, 0); // Adjust Y translation to lift the car above the ground if necessary
-		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		glScalef(1.0, 1.0, 1.0);  // Scale the car uniformly to make it bigger
-		model_coin.Draw();
-		glPopMatrix();
-
-		// Draw coin model
-		glPushMatrix();
-		glTranslatef(15, 5, 0); // Adjust Y translation to lift the car above the ground if necessary
-		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		glScalef(1.0, 1.0, 1.0);  // Scale the car uniformly to make it bigger
-		model_coin.Draw();
-		glPopMatrix();
+		for (int i = 0; i < numCoins; ++i) {
+			glPushMatrix(); 
+			glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]); 
+			model_coin.Draw(); // Draw the coin 
+			glPopMatrix(); }
 
 		// Draw flag model
 		glPushMatrix();
@@ -877,6 +864,7 @@ void main(int argc, char** argv)
 	glutInitWindowSize(WIDTH, HEIGHT);
 
 	glutInitWindowPosition(100, 150);
+	generateCoinPositions(); // Generate initial coin positions
 
 	glutCreateWindow(title);
 	playBackgroundMusic();
@@ -922,14 +910,14 @@ void main(int argc, char** argv)
 // 
 // 
 // rahma
-// camera shake when  the car get left or right for 1 sec 
+// camera shake when  the car get left or right for 1 sec ##############################
 // when i exceed the flag speed up ##########################################
 //display distance  ###############################################
 //z<100 1k first environment
 //z=100 flage  ####################################################
 //z>100 display environment 2 
 //z=2oo 2k finish line game win timer stop 
-//  set camera and their animations
+//  set camera and their animations 
 // game win 
 // 
 // 
@@ -940,7 +928,7 @@ void main(int argc, char** argv)
 // start point 
 //end point
 // car lights
-//environment 1
+//environment 1 
 //display score increase by one every two seconds ####################################
 //timer  1 min ##########################################
 // game over #######################################
