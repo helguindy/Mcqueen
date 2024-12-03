@@ -153,21 +153,20 @@ void setCamera() {
 
 void specialKeyboard(int key, int x, int y) {
 	const float moveSpeed = 1.1f; // Speed of the car movement
-	if (!timeOver) {
-		switch (key) {
-		case GLUT_KEY_UP:    // Up arrow key
-			carPosZ -= moveSpeed; // Move car forward along the Z-axis
-			break;
-		case GLUT_KEY_DOWN:  // Down arrow key
-			carPosZ += moveSpeed; // Move car backward along the Z-axis
-			break;
-		case GLUT_KEY_LEFT:  // Left arrow key
-			carPosX -= moveSpeed; // Move car left along the X-axis
-			break;
-		case GLUT_KEY_RIGHT: // Right arrow key
-			carPosX += moveSpeed; // Move car right along the X-axis
-			break;
-		}
+
+	switch (key) {
+	case GLUT_KEY_UP:    // Up arrow key
+		carPosZ -= moveSpeed; // Move car forward along the Z-axis
+		break;
+	case GLUT_KEY_DOWN:  // Down arrow key
+		carPosZ += moveSpeed; // Move car backward along the Z-axis
+		break;
+	case GLUT_KEY_LEFT:  // Left arrow key
+		carPosX -= moveSpeed; // Move car left along the X-axis
+		break;
+	case GLUT_KEY_RIGHT: // Right arrow key
+		carPosX += moveSpeed; // Move car right along the X-axis
+		break;
 	}
 
 	setCamera(); // Update the camera to follow the car
@@ -316,22 +315,22 @@ void myInit(void)
 	glLoadIdentity();
 
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
-	//*******************************************************************************************//
+	//*//
 	// fovy:			Angle between the bottom and top of the projectors, in degrees.			 //
 	// aspectRatio:		Ratio of width to height of the clipping plane.							 //
 	// zNear and zFar:	Specify the front and back clipping planes distances from camera.		 //
-	//*******************************************************************************************//
+	//*//
 
 	glMatrixMode(GL_MODELVIEW);
 
 	glLoadIdentity();
 
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
-	//*******************************************************************************************//
+	//*//
 	// EYE (ex, ey, ez): defines the location of the camera.									 //
 	// AT (ax, ay, az):	 denotes the direction where the camera is aiming at.					 //
 	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
-	//*******************************************************************************************//
+	//*//
 
 	InitLightSource();
 	InitCarLights();
@@ -449,15 +448,6 @@ float distance(float x1, float z1, float x2, float z2) {
 void checkCollisions() {
 	if (gameOver) return;
 
-// Add these global variables at the top
-float distance(float x1, float z1, float x2, float z2) {
-	return sqrt(pow(x2 - x1, 2) + pow(z2 - z1, 2));
-}
-
-// Modify checkCollisions():
-void checkCollisions() {
-	if (gameOver) return;
-
 	float taxiX = 5, taxiZ = 0;
 	//float toktokX = -10, toktokZ = 0;
 	float collisionRadius = 3.0f;
@@ -473,7 +463,7 @@ void checkCollisions() {
 		}
 	}
 
-	
+
 }
 
 
@@ -671,36 +661,6 @@ void myDisplay(void) {
 	renderLives();
 	checkCollisions();
 
-	if (gameOver) {
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
-
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
-
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadIdentity();
-
-		glColor3f(1.0f, 0.0f, 0.0f);
-		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2);
-		char* message = "Game Over!";
-		for (char* c = message; *c != '\0'; c++) {
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
-		}
-
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_LIGHTING);
-	}
-	renderLives();
-	checkCollisions();
-
 	glutSwapBuffers();
 }
 
@@ -710,7 +670,6 @@ void myDisplay(void) {
 // Keyboard Function
 //=======================================================================
 // Function to handle key presses for camera control
-// Keyboard callback for camera movement and view switching
 void keyboard(unsigned char key, int x, int y) {
 	const float moveStep = 1.0f;
 
