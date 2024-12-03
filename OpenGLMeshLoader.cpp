@@ -8,6 +8,13 @@
 
 #include <cstdio>
 
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
+int lives = 3;
+
 // Camera position and orientation variables
 float cameraX = 0.0f, cameraY = 7.0f, cameraZ = 20.0f; // Initial position
 float lookAtX = 0.0f, lookAtY = 0.0f, lookAtZ = 0.0f;  // Look-at point
@@ -23,6 +30,7 @@ float sunIntensity = 0.7f;  // Base intensity of the sunlight
 float intensityVariation = 0.3f; // Amplitude of intensity change
 float timeSpeed = 0.05f;    // Speed of time progression
 bool gameOver = false; // Flag to track game over state
+bool timeOver = false;
 
 
 int timer = 60; // Countdown timer in seconds
@@ -33,7 +41,7 @@ void updateGame(int value) {
 		timer--; // Decrement timer by 1 second
 	}
 	else {
-		gameOver = true;  // Game Over when timer reaches 0
+		timeOver = true;  // Game Over when timer reaches 0
 	}
 
 	if (timer % 2 == 0) {
@@ -44,7 +52,7 @@ void updateGame(int value) {
 	glutPostRedisplay();
 
 	// Register the timer callback again for the next second
-	if (!gameOver) {
+	if (!timeOver) {
 		glutTimerFunc(1000, updateGame, 0);
 	}
 }
@@ -75,7 +83,7 @@ void update(int value) {
 		score++; // Increment the score for demonstration
 	}
 	else {
-		gameOver = true;
+		timeOver = true;
 	}
 
 	glutPostRedisplay(); // Redraw the screen
@@ -317,22 +325,22 @@ void myInit(void)
 	glLoadIdentity();
 
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
-	//*******************************************************************************************//
+	//*******************************//
 	// fovy:			Angle between the bottom and top of the projectors, in degrees.			 //
 	// aspectRatio:		Ratio of width to height of the clipping plane.							 //
 	// zNear and zFar:	Specify the front and back clipping planes distances from camera.		 //
-	//*******************************************************************************************//
+	//*******************************//
 
 	glMatrixMode(GL_MODELVIEW);
 
 	glLoadIdentity();
 
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
-	//*******************************************************************************************//
+	//*******************************//
 	// EYE (ex, ey, ez): defines the location of the camera.									 //
 	// AT (ax, ay, az):	 denotes the direction where the camera is aiming at.					 //
 	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
-	//*******************************************************************************************//
+	//*******************************//
 
 	InitLightSource();
 	InitCarLights();
@@ -399,6 +407,77 @@ void renderGameOverScreen() {
 
 	glFlush(); // Ensure everything is drawn
 }
+void renderLives() {
+	glDisable(GL_LIGHTING);
+	glDisable(GL_DEPTH_TEST);
+
+	glMatrixMode(GL_PROJECTION);
+	glPushMatrix();
+	glLoadIdentity();
+	glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
+
+	glMatrixMode(GL_MODELVIEW);
+	glPushMatrix();
+	glLoadIdentity();
+
+	glColor3f(1.0f, 0.0f, 0.0f);
+
+	float scale = 1.0f;  // Reduced from 20.0f
+	float spacing = 50.0f; // Reduced from 50.0f
+	float baseX = 30.0f;  // Reduced from 50.0f
+	float baseY = HEIGHT - 30.0f; // Reduced from 50.0f
+
+	for (int i = 0; i < lives; i++) {
+		float x = baseX + (i * spacing);
+		float y = baseY;
+
+		glBegin(GL_POLYGON);
+		for (float angle = 0; angle < 2 * M_PI; angle += 0.1) {
+			float px = x + scale * 16 * pow(sin(angle), 3);
+			float py = y + scale * (13 * cos(angle) - 5 * cos(2 * angle) - 2 * cos(3 * angle) - cos(4 * angle));
+			glVertex2f(px, py);
+		}
+		glEnd();
+	}
+
+	glPopMatrix();
+	glMatrixMode(GL_PROJECTION);
+	glPopMatrix();
+
+	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_LIGHTING);
+}
+
+
+// Add these global variables at the top
+float distance(float x1, float z1, float x2, float z2) {
+	return sqrt(pow(x2 - x1, 2) + pow(z2 - z1, 2));
+}
+
+// Modify checkCollisions():
+void checkCollisions() {
+	if (gameOver) return;
+
+	float taxiX = 5, taxiZ = 0;
+	//float toktokX = -10, toktokZ = 0;
+	float collisionRadius = 3.0f;
+
+	if (distance(carPosX, carPosZ, taxiX, taxiZ) < collisionRadius) {
+		if (lives > 0) {
+			lives--;
+			carPosX = 0;
+			carPosZ = 0;
+			if (lives == 0) {
+				gameOver = true;
+			}
+		}
+	}
+
+
+}
+
+
+
 
 
 //=======================================================================
@@ -487,7 +566,7 @@ void myDisplay(void) {
 
 		// Draw flag model
 		glPushMatrix();
-		glTranslatef(5, 3, 0); // Adjust Y translation to lift the car above the ground if necessary
+		glTranslatef(5, 0, 1); // Adjust Y translation to lift the car above the ground if necessary
 		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
 		glScalef(0.059, 0.059, 0.059);  // Scale the car uniformly to make it bigger
 		model_taxi.Draw();
@@ -523,9 +602,38 @@ void myDisplay(void) {
 
 	}
 
+	if (timeOver) {
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
+
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2);
+		char* message = "Time Over!";
+		for (char* c = message; *c != '\0'; c++) {
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+		}
+
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_LIGHTING);
+	}
+	renderLives();
+	checkCollisions();
+
 	glutSwapBuffers();
 }
-
 
 
 
@@ -721,6 +829,6 @@ void main(int argc, char** argv)
 //environment 1
 //display score increase by one every two seconds ####################################
 //timer  1 min ##########################################
-// game over 
+// game over #######################################
 // environment 2 new obsistecale slow dowm for 10 sec and new collectable 
-// 
+//
