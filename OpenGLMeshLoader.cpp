@@ -206,8 +206,6 @@ void specialKeyboard(int key, int x, int y) {
 
 
 
-
-
 void setupOrthoProjection(int windowWidth, int windowHeight) {
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
