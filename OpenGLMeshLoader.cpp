@@ -724,8 +724,3 @@ void main(int argc, char** argv)
 // game over #######################################
 // environment 2 new obsistecale slow dowm for 10 sec and new collectable 
 // 
-
-
-
-
-
