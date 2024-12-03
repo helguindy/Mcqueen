@@ -164,20 +164,21 @@ void setCamera() {
 
 void specialKeyboard(int key, int x, int y) {
 	const float moveSpeed = 1.1f; // Speed of the car movement
-
-	switch (key) {
-	case GLUT_KEY_UP:    // Up arrow key
-		carPosZ -= moveSpeed; // Move car forward along the Z-axis
-		break;
-	case GLUT_KEY_DOWN:  // Down arrow key
-		carPosZ += moveSpeed; // Move car backward along the Z-axis
-		break;
-	case GLUT_KEY_LEFT:  // Left arrow key
-		carPosX -= moveSpeed; // Move car left along the X-axis
-		break;
-	case GLUT_KEY_RIGHT: // Right arrow key
-		carPosX += moveSpeed; // Move car right along the X-axis
-		break;
+	if (!timeOver) {
+		switch (key) {
+		case GLUT_KEY_UP:    // Up arrow key
+			carPosZ -= moveSpeed; // Move car forward along the Z-axis
+			break;
+		case GLUT_KEY_DOWN:  // Down arrow key
+			carPosZ += moveSpeed; // Move car backward along the Z-axis
+			break;
+		case GLUT_KEY_LEFT:  // Left arrow key
+			carPosX -= moveSpeed; // Move car left along the X-axis
+			break;
+		case GLUT_KEY_RIGHT: // Right arrow key
+			carPosX += moveSpeed; // Move car right along the X-axis
+			break;
+		}
 	}
 
 	setCamera(); // Update the camera to follow the car
