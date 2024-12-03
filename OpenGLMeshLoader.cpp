@@ -30,6 +30,7 @@ float sunIntensity = 0.7f;  // Base intensity of the sunlight
 float intensityVariation = 0.3f; // Amplitude of intensity change
 float timeSpeed = 0.05f;    // Speed of time progression
 bool gameOver = false; // Flag to track game over state
+bool timeOver = false;
 
 
 int timer = 60; // Countdown timer in seconds
@@ -40,7 +41,7 @@ void updateGame(int value) {
 		timer--; // Decrement timer by 1 second
 	}
 	else {
-		gameOver = true;  // Game Over when timer reaches 0
+		timeOver = true;  // Game Over when timer reaches 0
 	}
 
 	if (timer % 2 == 0) {
@@ -51,7 +52,7 @@ void updateGame(int value) {
 	glutPostRedisplay();
 
 	// Register the timer callback again for the next second
-	if (!gameOver) {
+	if (!timeOver) {
 		glutTimerFunc(1000, updateGame, 0);
 	}
 }
@@ -82,7 +83,7 @@ void update(int value) {
 		score++; // Increment the score for demonstration
 	}
 	else {
-		gameOver = true;
+		timeOver = true;
 	}
 
 	glutPostRedisplay(); // Redraw the screen
@@ -325,22 +326,22 @@ void myInit(void)
 	glLoadIdentity();
 
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
-	//*******************************************************************************************//
+	//*******************************//
 	// fovy:			Angle between the bottom and top of the projectors, in degrees.			 //
 	// aspectRatio:		Ratio of width to height of the clipping plane.							 //
 	// zNear and zFar:	Specify the front and back clipping planes distances from camera.		 //
-	//*******************************************************************************************//
+	//*******************************//
 
 	glMatrixMode(GL_MODELVIEW);
 
 	glLoadIdentity();
 
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
-	//*******************************************************************************************//
+	//*******************************//
 	// EYE (ex, ey, ez): defines the location of the camera.									 //
 	// AT (ax, ay, az):	 denotes the direction where the camera is aiming at.					 //
 	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
-	//*******************************************************************************************//
+	//*******************************//
 
 	InitLightSource();
 	InitCarLights();
@@ -518,8 +519,8 @@ void myDisplay(void) {
 		glTranslatef(carPosX, carPosY, carPosZ); // Move the car to its position
 		glRotatef(angleToCamera + modelOffset, 0.0f, 1.0f, 0.0f);  // Rotate the car to face the camera
 
-		glScalef(10.0, 10.0, 10.0);  // Scale the car uniformly to make it bigger
-		model_house.Draw();          // Draw the car
+		glScalef(3.0, 3.0, 3.0);  // Scale the car uniformly to make it bigger
+		model_redcar.Draw();          // Draw the car
 		glPopMatrix();
 
 
@@ -573,12 +574,12 @@ void myDisplay(void) {
 		glPopMatrix();
 
 		// Draw redcar model
-		glPushMatrix();
-		glTranslatef(5, 0, 1); // Adjust Y translation to lift the car above the ground if necessary
-		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		glScalef(0.059, 0.059, 0.059);  // Scale the car uniformly to make it bigger
-		model_redcar.Draw();
-		glPopMatrix();
+		//glPushMatrix();
+		//glTranslatef(5, 0, 1); // Adjust Y translation to lift the car above the ground if necessary
+		//glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		//glScalef(3, 3,3);  // Scale the car uniformly to make it bigger
+		//model_redcar.Draw();
+		//glPopMatrix();
 
 
 		//sky box
@@ -627,6 +628,36 @@ void myDisplay(void) {
 		glColor3f(1.0f, 0.0f, 0.0f);
 		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2);
 		char* message = "Game Over!";
+		for (char* c = message; *c != '\0'; c++) {
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+		}
+
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_LIGHTING);
+	}
+	renderLives();
+	checkCollisions();
+
+	if (timeOver) {
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
+
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2);
+		char* message = "Time Over!";
 		for (char* c = message; *c != '\0'; c++) {
 			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
 		}
@@ -841,9 +872,4 @@ void main(int argc, char** argv)
 //timer  1 min ##########################################
 // game over #######################################
 // environment 2 new obsistecale slow dowm for 10 sec and new collectable 
-// 
-
-
-
-
-
+//
