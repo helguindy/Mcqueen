@@ -165,7 +165,7 @@ void setCamera() {
 		gluLookAt(0.0, 7.0, 30.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 		break;
 	case 4: // First-person view
-		gluLookAt(carPosX, carPosY + 6.5f, carPosZ, // Camera at car position
+		gluLookAt(carPosX, carPosY + 6.5f, carPosZ , // Camera at car position
 			carPosX + sin(angleToCamera), carPosY + 6.5f, carPosZ - cos(angleToCamera), // Looking in the direction of the car
 			0.0, 1.0, 0.0); // Up vector
 		break;
@@ -175,6 +175,9 @@ void setCamera() {
 
 
 
+
+
+//float moveSpeed = 1.1f; // Speed of the car movement
 
 
 //float moveSpeed = 1.1f; // Speed of the car movement
@@ -287,6 +290,7 @@ Model_3DS model_redcar;
 
 // Textures
 GLTexture tex_ground;
+//GLTexture tex_sky;
 
 
 //=======================================================================
@@ -505,6 +509,23 @@ void checkCollisions() {
 
 
 
+//void RenderSkyBox() {
+//	glDisable(GL_LIGHTING);  // Disable lighting for the skybox
+//	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
+//	glBindTexture(GL_TEXTURE_2D, tex_sky); // Bind the skybox texture
+//
+//	glPushMatrix();
+//	glTranslated(carPosX, carPosY, carPosZ); // Center the skybox on the car
+//	GLUquadricObj* qobj = gluNewQuadric();
+//	gluQuadricTexture(qobj, true);
+//	gluQuadricNormals(qobj, GL_SMOOTH);
+//	gluSphere(qobj, 1000.0, 100, 100); // Large enough to encompass the scene
+//	gluDeleteQuadric(qobj);
+//	glPopMatrix();
+//
+//	glDisable(GL_TEXTURE_2D);
+//	glEnable(GL_LIGHTING);  // Re-enable lighting for other objects
+//}
 
 
 //=======================================================================
@@ -537,17 +558,15 @@ void myDisplay(void) {
 		float deltaX = cameraX - carPosX;
 		float deltaZ = cameraZ - carPosZ;
 
-		// Calculate the angle between the car and the camera using atan2
+
 		float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / 3.14159f;
 
-		float modelOffset = 180.0f; // Adjust this value if needed (try 90, 180, or 270)
-
+		float modelOffset = 0.0f; // Adjust this value to rotate the car, use 180 to face the other way around
 		glPushMatrix();
 		glTranslatef(carPosX, carPosY, carPosZ); // Move the car to its position
 		glRotatef(angleToCamera + modelOffset, 0.0f, 1.0f, 0.0f);  // Rotate the car to face the camera
-
 		glScalef(3.0, 3.0, 3.0);  // Scale the car uniformly to make it bigger
-		model_redcar.Draw();          // Draw the car
+		model_redcar.Draw();      // Draw the car
 		glPopMatrix();
 
 
@@ -609,18 +628,19 @@ void myDisplay(void) {
 		//glPopMatrix();
 
 
-		//sky box
-		//glPushMatrix();
-		//GLUquadricObj* qobj;
-		//qobj = gluNewQuadric();
-		//glTranslated(0, 50, 0);
-		//glRotated(90, 1, 0, 1);
-		//glBindTexture(GL_TEXTURE_2D, tex);
-		//gluQuadricTexture(qobj, true);
-		//gluQuadricNormals(qobj, GL_SMOOTH);
-		//gluSphere(qobj, 100, 100, 100);
-		//gluDeleteQuadric(qobj);
-		//glPopMatrix();
+		
+		glPushMatrix();
+		GLUquadricObj* qobj;
+		qobj = gluNewQuadric();
+		glTranslated(cameraX, cameraY, cameraZ); // Center the skybox on the camera
+		glRotated(90, 1, 0, 1);
+		glBindTexture(GL_TEXTURE_2D, tex); // Make sure to bind the correct texture for the skybox
+		gluQuadricTexture(qobj, true);
+		gluQuadricNormals(qobj, GL_SMOOTH);
+		gluSphere(qobj, 1000.0, 100, 100); // Large enough to encompass the scene
+		gluDeleteQuadric(qobj);
+		glPopMatrix();
+
 
 		UpdateCarLights();
 		float distanceTraveledZ = carPosZ - initialCarPosZ; // Set up orthographic projection for 2D text rendering 
@@ -827,7 +847,7 @@ void LoadAssets()
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
 
-	//loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
+	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
 
 //=======================================================================
@@ -896,7 +916,7 @@ void main(int argc, char** argv)
 //z>100 display environment 2 
 //z=2oo 2k finish line game win timer stop 
 //  set camera and their animations
-// game win
+// game win 
 // 
 // 
 // 
