@@ -15,6 +15,8 @@
 #endif
 
 int lives = 6;
+float initialCarPosZ = 0.0f;
+
 
 // Camera position and orientation variables
 float cameraX = 0.0f, cameraY = 7.0f, cameraZ = 20.0f; // Initial position
@@ -32,13 +34,14 @@ float intensityVariation = 0.3f; // Amplitude of intensity change
 float timeSpeed = 0.05f;    // Speed of time progression
 bool gameOver = false; // Flag to track game over state
 bool timeOver = false;
+float moveSpeed = 1.1f;
 
 
 int timer = 60; // Countdown timer in seconds
 int score = 0;  // Player score
 
 void playCollisionSound() {
-	PlaySound(TEXT("C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\collectables.wav"), NULL, SND_ASYNC);
+	PlaySound(TEXT("C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\bgsong.wav"), NULL, SND_ASYNC);
 }
 
 void playBackgroundMusic() {
@@ -143,11 +146,14 @@ void setCamera() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Adjust camera position based on view mode
-	
+	// Calculate the angle to the camera for first-person view
+	float deltaX = cameraX - carPosX;
+	float deltaZ = cameraZ - carPosZ;
+	float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / 3.14159f; // Convert to degrees
+
 	switch (viewMode) {
-	case 0: // Default perspective view
-		gluLookAt(cameraX, cameraY, cameraZ, lookAtX, lookAtY, lookAtZ, 0.0, 1.0, 0.0);
+	case 0: // Perspective view (Third-person)
+		gluLookAt(cameraX, cameraY, cameraZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
 		break;
 	case 1: // Top view
 		gluLookAt(0.0, 30.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
@@ -158,6 +164,11 @@ void setCamera() {
 	case 3: // Front view
 		gluLookAt(0.0, 7.0, 30.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 		break;
+	case 4: // First-person view
+		gluLookAt(carPosX, carPosY + 6.5f, carPosZ, // Camera at car position
+			carPosX + sin(angleToCamera), carPosY + 6.5f, carPosZ - cos(angleToCamera), // Looking in the direction of the car
+			0.0, 1.0, 0.0); // Up vector
+		break;
 	}
 }
 
@@ -165,8 +176,10 @@ void setCamera() {
 
 
 
+
+//float moveSpeed = 1.1f; // Speed of the car movement
+
 void specialKeyboard(int key, int x, int y) {
-	const float moveSpeed = 1.1f; // Speed of the car movement
 	if (!timeOver) {
 		switch (key) {
 		case GLUT_KEY_UP:    // Up arrow key
@@ -184,9 +197,15 @@ void specialKeyboard(int key, int x, int y) {
 		}
 	}
 
+	// Update camera position to follow the car
+	cameraX = carPosX;
+	cameraZ = carPosZ + 20.0f; // Maintain a fixed distance behind the car
+
 	setCamera(); // Update the camera to follow the car
 	glutPostRedisplay(); // Request display update after movement
 }
+
+
 
 
 
@@ -203,6 +222,7 @@ void setupOrthoProjection(int windowWidth, int windowHeight) {
 
 // Initialization function
 void init() {
+
 	glEnable(GL_DEPTH_TEST);
 
 	// Set up lighting (optional)
@@ -214,6 +234,8 @@ void init() {
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	initialCarPosZ = carPosZ;
+
 }
 
 
@@ -379,8 +401,8 @@ void RenderGround()
 	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]);	// Bind the ground texture
 
 	// Set a large rectangle to simulate an infinite ground
-	float groundSize = 500.0f;  // Large ground size for the visible area
-	float textureRepeat = 50.0f; // Texture repetition factor
+	float groundSize =5000.0f;  // Large ground size for the visible area
+	float textureRepeat = 500.0f; // Texture repetition factor
 
 	glPushMatrix();
 	glBegin(GL_QUADS);
@@ -499,6 +521,7 @@ void myDisplay(void) {
 		// Draw Ground
 		RenderGround();
 
+		
 		timeElapsed += timeSpeed;
 		float currentIntensity = sunIntensity + intensityVariation * sin(timeElapsed);
 
@@ -600,7 +623,8 @@ void myDisplay(void) {
 		//glPopMatrix();
 
 		UpdateCarLights();
-
+		float distanceTraveledZ = carPosZ - initialCarPosZ; // Set up orthographic projection for 2D text rendering 
+		//glMatrixMode(GL_PROJECTION); 
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -610,9 +634,13 @@ void myDisplay(void) {
 
 		std::string timerText = "Time Left: " + std::to_string(timer);
 		std::string scoreText = "Score: " + std::to_string(score);
-
-		renderText(20, 60, timerText, 0.1f);  // You can adjust the position and size as needed
+		std::string distanceText = "Distance Traveled : " + std::to_string(distanceTraveledZ);  
+		renderText(20, 60, timerText, 0.1f); 
 		renderText(20, 90, scoreText, 0.1f);
+		renderText(20, 120, distanceText, 0.1f);
+		
+		
+		
 
 	}
 
@@ -738,16 +766,21 @@ void myMotion(int x, int y)
 // Mouse Function
 //=======================================================================
 // Mouse Function
+// Mouse Function
+// Mouse Function
 void myMouse(int button, int state, int x, int y)
 {
 	y = HEIGHT - y;  // Adjust y for proper orientation
 
 	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-		// Toggle between First-Person (0) and Third-Person (1)
-		viewMode = (viewMode == 0) ? 1 : 0;
+		// Toggle between First-Person (4) and Third-Person (0)
+		viewMode = (viewMode == 4) ? 0 : 4; // Assuming 4 is First-Person, 0 is Third-Person
+		setCamera();  // Update the camera to reflect the new view
 		glutPostRedisplay();  // Redraw the scene to update the camera
 	}
 }
+
+
 
 
 
@@ -855,7 +888,6 @@ void main(int argc, char** argv)
 // 
 // 
 // rahma
-// first and third person view and switch by rigth click
 // camera shake when  the car get left or right for 1 sec 
 // when i exceed the flag speed up
 //display distance 
