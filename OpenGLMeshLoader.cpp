@@ -721,7 +721,7 @@ void main(int argc, char** argv)
 //environment 1
 //display score increase by one every two seconds ####################################
 //timer  1 min ##########################################
-// game over #######################################
+// game over 
 // environment 2 new obsistecale slow dowm for 10 sec and new collectable 
 // 
 
