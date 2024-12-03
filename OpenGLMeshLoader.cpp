@@ -8,6 +8,9 @@
 #include <Windows.h>
 #include <mmsystem.h>
 #include <cstdio>
+#include <cstdlib>
+#include <ctime>
+
 
 
 #ifndef M_PI
@@ -34,7 +37,11 @@ float intensityVariation = 0.3f; // Amplitude of intensity change
 float timeSpeed = 0.05f;    // Speed of time progression
 bool gameOver = false; // Flag to track game over state
 bool timeOver = false;
-float moveSpeed = 1.1f;
+//float moveSpeed = 1.1f;
+float normalSpeed = 1.0f; // Normal speed of the car
+float increasedSpeed = 2.2f; // Increased speed after Z = 600
+float moveSpeed = normalSpeed; // Initial move speed
+
 
 
 int timer = 60; // Countdown timer in seconds
@@ -184,6 +191,9 @@ void setCamera() {
 
 void specialKeyboard(int key, int x, int y) {
 	if (!timeOver) {
+		if (carPosZ > 600) { moveSpeed = increasedSpeed; }
+		else { moveSpeed = normalSpeed; 
+		}
 		switch (key) {
 		case GLUT_KEY_UP:    // Up arrow key
 			carPosZ -= moveSpeed; // Move car forward along the Z-axis
@@ -193,9 +203,13 @@ void specialKeyboard(int key, int x, int y) {
 			break;
 		case GLUT_KEY_LEFT:  // Left arrow key
 			carPosX -= moveSpeed; // Move car left along the X-axis
+			cameraX += (rand() % 5 - 2) * 0.1f; 
+			cameraY += (rand() % 5 - 2) * 0.1f;
 			break;
 		case GLUT_KEY_RIGHT: // Right arrow key
 			carPosX += moveSpeed; // Move car right along the X-axis
+			cameraX += (rand() % 5 - 2) * 0.1f;
+			cameraY += (rand() % 5 - 2) * 0.1f;
 			break;
 		}
 	}
@@ -605,7 +619,7 @@ void myDisplay(void) {
 
 		// Draw flag model
 		glPushMatrix();
-		glTranslatef(15, 3, 0); // Adjust Y translation to lift the car above the ground if necessary
+		glTranslatef(15, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
 		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
 		glScalef(0.09, 0.09, 0.09);  // Scale the car uniformly to make it bigger
 		model_flag.Draw();
@@ -909,10 +923,10 @@ void main(int argc, char** argv)
 // 
 // rahma
 // camera shake when  the car get left or right for 1 sec 
-// when i exceed the flag speed up
-//display distance 
+// when i exceed the flag speed up ##########################################
+//display distance  ###############################################
 //z<100 1k first environment
-//z=100 flage 
+//z=100 flage  ####################################################
 //z>100 display environment 2 
 //z=2oo 2k finish line game win timer stop 
 //  set camera and their animations
