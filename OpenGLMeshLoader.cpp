@@ -125,24 +125,35 @@ int viewMode = 0;
 void setCamera() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(70.0, 16.0 / 9.0, 1.0, 50.0);
+	gluPerspective(70.0, 16.0 / 9.0, 1.0, 50.0); // Perspective view
 
+	// Adjust the camera based on the view mode
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Adjust camera position based on view mode
+	// Assuming the car model's position is at (carPosX, carPosY, carPosZ)
+	// Adjust based on the chosen view mode:
 	switch (viewMode) {
-	case 0: // Default perspective view
-		gluLookAt(cameraX, cameraY, cameraZ, lookAtX, lookAtY, lookAtZ, 0.0, 1.0, 0.0);
+	case 0: // First-Person View (Inside the car)
+		// The camera will be placed inside the car, looking out from the front
+		// Adjust this based on your car's internal structure or seat position
+		gluLookAt(carPosX, carPosY + 20.0f, carPosZ,    // Camera position inside the car
+			carPosX, carPosY, carPosZ - 1.0f,  // Look at the front of the car
+			0.0, 1.0, 0.0);              // Up vector
 		break;
-	case 1: // Top view
-		gluLookAt(0.0, 30.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
+
+	case 1: // Third-Person View (Above and behind the car)
+		// Camera positioned behind and slightly above the car to view the back
+		gluLookAt(carPosX + 20.0f, carPosY + 4.0f, carPosZ - 17.0f,  // Camera position above and behind the car
+			carPosX, carPosY, carPosZ,               // Look at the car's center (back)
+			0.0, 1.0, 0.0);                         // Up vector
 		break;
-	case 2: // Side view
-		gluLookAt(30.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-		break;
-	case 3: // Front view
-		gluLookAt(0.0, 7.0, 30.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+
+	default:
+		// Default to first-person view if viewMode is invalid
+		gluLookAt(carPosX, carPosY, carPosZ,   // Camera position
+			carPosX, carPosY, carPosZ - 1.0f, // Look at the front of the car
+			0.0, 1.0, 0.0); // Up vector
 		break;
 	}
 }
@@ -153,21 +164,20 @@ void setCamera() {
 
 void specialKeyboard(int key, int x, int y) {
 	const float moveSpeed = 1.1f; // Speed of the car movement
-	if (!timeOver) {
-		switch (key) {
-		case GLUT_KEY_UP:    // Up arrow key
-			carPosZ -= moveSpeed; // Move car forward along the Z-axis
-			break;
-		case GLUT_KEY_DOWN:  // Down arrow key
-			carPosZ += moveSpeed; // Move car backward along the Z-axis
-			break;
-		case GLUT_KEY_LEFT:  // Left arrow key
-			carPosX -= moveSpeed; // Move car left along the X-axis
-			break;
-		case GLUT_KEY_RIGHT: // Right arrow key
-			carPosX += moveSpeed; // Move car right along the X-axis
-			break;
-		}
+
+	switch (key) {
+	case GLUT_KEY_UP:    // Up arrow key
+		carPosZ -= moveSpeed; // Move car forward along the Z-axis
+		break;
+	case GLUT_KEY_DOWN:  // Down arrow key
+		carPosZ += moveSpeed; // Move car backward along the Z-axis
+		break;
+	case GLUT_KEY_LEFT:  // Left arrow key
+		carPosX -= moveSpeed; // Move car left along the X-axis
+		break;
+	case GLUT_KEY_RIGHT: // Right arrow key
+		carPosX += moveSpeed; // Move car right along the X-axis
+		break;
 	}
 
 	setCamera(); // Update the camera to follow the car
@@ -316,22 +326,22 @@ void myInit(void)
 	glLoadIdentity();
 
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
-	//*******************************************************************************************//
+	//***********//
 	// fovy:			Angle between the bottom and top of the projectors, in degrees.			 //
 	// aspectRatio:		Ratio of width to height of the clipping plane.							 //
 	// zNear and zFar:	Specify the front and back clipping planes distances from camera.		 //
-	//*******************************************************************************************//
+	//***********//
 
 	glMatrixMode(GL_MODELVIEW);
 
 	glLoadIdentity();
 
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
-	//*******************************************************************************************//
+	//***********//
 	// EYE (ex, ey, ez): defines the location of the camera.									 //
 	// AT (ax, ay, az):	 denotes the direction where the camera is aiming at.					 //
 	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
-	//*******************************************************************************************//
+	//***********//
 
 	InitLightSource();
 	InitCarLights();
@@ -449,15 +459,6 @@ float distance(float x1, float z1, float x2, float z2) {
 void checkCollisions() {
 	if (gameOver) return;
 
-// Add these global variables at the top
-float distance(float x1, float z1, float x2, float z2) {
-	return sqrt(pow(x2 - x1, 2) + pow(z2 - z1, 2));
-}
-
-// Modify checkCollisions():
-void checkCollisions() {
-	if (gameOver) return;
-
 	float taxiX = 5, taxiZ = 0;
 	//float toktokX = -10, toktokZ = 0;
 	float collisionRadius = 3.0f;
@@ -473,7 +474,7 @@ void checkCollisions() {
 		}
 	}
 
-	
+
 }
 
 
@@ -671,36 +672,6 @@ void myDisplay(void) {
 	renderLives();
 	checkCollisions();
 
-	if (gameOver) {
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
-
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
-
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadIdentity();
-
-		glColor3f(1.0f, 0.0f, 0.0f);
-		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2);
-		char* message = "Game Over!";
-		for (char* c = message; *c != '\0'; c++) {
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
-		}
-
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_LIGHTING);
-	}
-	renderLives();
-	checkCollisions();
-
 	glutSwapBuffers();
 }
 
@@ -710,24 +681,21 @@ void myDisplay(void) {
 // Keyboard Function
 //=======================================================================
 // Function to handle key presses for camera control
-// Keyboard callback for camera movement and view switching
 void keyboard(unsigned char key, int x, int y) {
-	const float moveStep = 1.0f;
-
 	switch (key) {
-	case 'w': cameraZ -= moveStep; break;
-	case 's': cameraZ += moveStep; break;
-	case 'a': cameraX -= moveStep; break;
-	case 'd': cameraX += moveStep; break;
-	case 'q': cameraY += moveStep; break;
-	case 'e': cameraY -= moveStep; break;
-	case '1': viewMode = 0; break;
-	case '2': viewMode = 1; break;
-	case '3': viewMode = 2; break;
-	case '4': viewMode = 3; break;
-	case 27: exit(0); break;
+	case '1': // Default perspective view
+		viewMode = 0;
+		break;
+	case '2': // Top view
+		viewMode = 1;
+		break;
+	case '3': // Side view
+		viewMode = 2;
+		break;
+	case '4': // Front view
+		viewMode = 3;
+		break;
 	}
-
 	glutPostRedisplay();
 }
 //=======================================================================
