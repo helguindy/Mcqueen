@@ -5,7 +5,8 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-
+#include <Windows.h>
+#include <mmsystem.h>
 #include <cstdio>
 
 
@@ -13,7 +14,7 @@
 #define M_PI 3.14159265358979323846
 #endif
 
-int lives = 3;
+int lives = 6;
 
 // Camera position and orientation variables
 float cameraX = 0.0f, cameraY = 7.0f, cameraZ = 20.0f; // Initial position
@@ -35,6 +36,18 @@ bool timeOver = false;
 
 int timer = 60; // Countdown timer in seconds
 int score = 0;  // Player score
+
+void playCollisionSound() {
+	PlaySound(TEXT("C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\collectables.wav"), NULL, SND_ASYNC);
+}
+
+void playBackgroundMusic() {
+	// Open the background music file
+	mciSendString("open \"C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\bgsong.wav\" type mpegvideo alias bgMusic", NULL, 0, NULL);
+
+	// Play the music in a loop
+	mciSendString("play bgMusic repeat", NULL, 0, NULL);
+}
 
 void updateGame(int value) {
 	if (timer > 0) {
@@ -131,6 +144,7 @@ void setCamera() {
 	glLoadIdentity();
 
 	// Adjust camera position based on view mode
+	
 	switch (viewMode) {
 	case 0: // Default perspective view
 		gluLookAt(cameraX, cameraY, cameraZ, lookAtX, lookAtY, lookAtZ, 0.0, 1.0, 0.0);
@@ -393,7 +407,7 @@ void renderGameOverScreen() {
 	glColor3f(1.0f, 0.0f, 0.0f); // Red "Game Over" text
 
 	// Render "Game Over" message
-	renderText(0.4f, 0.5f, "GAME OVER", 0.002f);
+	renderText(0.4f, 0.5f, " ", 0.002f);
 
 	glFlush(); // Ensure everything is drawn
 }
@@ -454,6 +468,7 @@ void checkCollisions() {
 
 	if (distance(carPosX, carPosZ, taxiX, taxiZ) < collisionRadius) {
 		if (lives > 0) {
+			playCollisionSound();
 			lives--;
 			carPosX = 0;
 			carPosZ = 0;
@@ -787,6 +802,7 @@ void LoadAssets()
 //=======================================================================
 void main(int argc, char** argv)
 {
+
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -796,7 +812,7 @@ void main(int argc, char** argv)
 	glutInitWindowPosition(100, 150);
 
 	glutCreateWindow(title);
-
+	playBackgroundMusic();
 	glutDisplayFunc(myDisplay);
 	glutTimerFunc(1000, update, 0); // Start the update loop
 
@@ -829,9 +845,9 @@ void main(int argc, char** argv)
 // //coins double score
 //collesion with any collectible and the car 
 // odstecle in environment 1 cars
-// collision with any obstical lose one life  and make a sound effect 
-// player has 3 lives
-// if player lose all lifes game end 
+// collision with any obstical lose one life  and make a sound effect #################################
+// player has 3 lives ############################################################
+// if player lose all lifes game end  ##################################################################
 //set collectables and obstecalles position 
 // 
 // 
@@ -862,5 +878,5 @@ void main(int argc, char** argv)
 //display score increase by one every two seconds ####################################
 //timer  1 min ##########################################
 // game over #######################################
-// environment 2 new obsistecale slow dowm for 10 sec and new collectable 
+// environment 2 new obsistecale slow dowm for 10 sec and new collectable  
 //
