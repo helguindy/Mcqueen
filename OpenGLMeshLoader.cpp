@@ -245,6 +245,7 @@ Model_3DS model_tree;
 Model_3DS model_coin;
 Model_3DS model_flag;
 Model_3DS model_taxi;
+Model_3DS model_redcar;
 
 
 
@@ -471,7 +472,7 @@ void checkCollisions() {
 		}
 	}
 
-
+	
 }
 
 
@@ -516,8 +517,8 @@ void myDisplay(void) {
 		glTranslatef(carPosX, carPosY, carPosZ); // Move the car to its position
 		glRotatef(angleToCamera + modelOffset, 0.0f, 1.0f, 0.0f);  // Rotate the car to face the camera
 
-		glScalef(10.0, 10.0, 10.0);  // Scale the car uniformly to make it bigger
-		model_house.Draw();          // Draw the car
+		glScalef(3.0, 3.0, 3.0);  // Scale the car uniformly to make it bigger
+		model_redcar.Draw();          // Draw the car
 		glPopMatrix();
 
 
@@ -570,18 +571,27 @@ void myDisplay(void) {
 		model_taxi.Draw();
 		glPopMatrix();
 
+		// Draw redcar model
+		//glPushMatrix();
+		//glTranslatef(5, 0, 1); // Adjust Y translation to lift the car above the ground if necessary
+		//glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		//glScalef(3, 3,3);  // Scale the car uniformly to make it bigger
+		//model_redcar.Draw();
+		//glPopMatrix();
+
+
 		//sky box
-		glPushMatrix();
-		GLUquadricObj* qobj;
-		qobj = gluNewQuadric();
-		glTranslated(0, 50, 0);
-		glRotated(90, 1, 0, 1);
-		glBindTexture(GL_TEXTURE_2D, tex);
-		gluQuadricTexture(qobj, true);
-		gluQuadricNormals(qobj, GL_SMOOTH);
-		gluSphere(qobj, 100, 100, 100);
-		gluDeleteQuadric(qobj);
-		glPopMatrix();
+		//glPushMatrix();
+		//GLUquadricObj* qobj;
+		//qobj = gluNewQuadric();
+		//glTranslated(0, 50, 0);
+		//glRotated(90, 1, 0, 1);
+		//glBindTexture(GL_TEXTURE_2D, tex);
+		//gluQuadricTexture(qobj, true);
+		//gluQuadricNormals(qobj, GL_SMOOTH);
+		//gluSphere(qobj, 100, 100, 100);
+		//gluDeleteQuadric(qobj);
+		//glPopMatrix();
 
 		UpdateCarLights();
 
@@ -599,6 +609,36 @@ void myDisplay(void) {
 		renderText(20, 90, scoreText, 0.1f);
 
 	}
+
+	if (gameOver) {
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
+
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2);
+		char* message = "Game Over!";
+		for (char* c = message; *c != '\0'; c++) {
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+		}
+
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_LIGHTING);
+	}
+	renderLives();
+	checkCollisions();
 
 	if (timeOver) {
 		glDisable(GL_LIGHTING);
@@ -774,11 +814,12 @@ void LoadAssets()
 	model_coin.Load("Models/coin.3ds");
 	model_flag.Load("Models/flag.3ds");
 	model_taxi.Load("Models/taxi.3ds");
+	model_redcar.Load("Models/redcar/redcar.3DS");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
 
-	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
+	//loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
 
 //=======================================================================
