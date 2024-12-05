@@ -5,21 +5,15 @@
 #include <iostream>
 #include <string>
 #include <sstream>
-#include <Windows.h>
-#include <mmsystem.h>
-#include <cstdio>
-#include <cstdlib>
-#include <ctime>
 
+#include <cstdio>
 
 
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
 
-int lives = 6;
-float initialCarPosZ = 0.0f;
-
+int lives = 3;
 
 // Camera position and orientation variables
 float cameraX = 0.0f, cameraY = 7.0f, cameraZ = 20.0f; // Initial position
@@ -37,30 +31,10 @@ float intensityVariation = 0.3f; // Amplitude of intensity change
 float timeSpeed = 0.05f;    // Speed of time progression
 bool gameOver = false; // Flag to track game over state
 bool timeOver = false;
-//float moveSpeed = 1.1f;
-float normalSpeed = 1.0f; // Normal speed of the car
-float increasedSpeed = 2.2f; // Increased speed after Z = 600
-float moveSpeed = normalSpeed; // Initial move speed
-const int numCoins = 10; // Number of coins
-float coinPositions[numCoins][3]; // Array to store coin positions (X, Y, Z)
-
-
 
 
 int timer = 60; // Countdown timer in seconds
 int score = 0;  // Player score
-
-void playCollisionSound() {
-	PlaySound(TEXT("C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\bgsong.wav"), NULL, SND_ASYNC);
-}
-
-void playBackgroundMusic() {
-	// Open the background music file
-	mciSendString("open \"C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\bgsong.wav\" type mpegvideo alias bgMusic", NULL, 0, NULL);
-
-	// Play the music in a loop
-	mciSendString("play bgMusic repeat", NULL, 0, NULL);
-}
 
 void updateGame(int value) {
 	if (timer > 0) {
@@ -100,16 +74,6 @@ void renderText(float x, float y, const std::string& text, float scale) {
 	glPopMatrix();
 	glEnable(GL_LIGHTING);
 }
-
-void generateCoinPositions() {
-	for (int i = 0; i < numCoins; ++i) {
-		coinPositions[i][0] = static_cast<float>(rand() % 41 - 30); // X: -30 to 30
-		coinPositions[i][1] = 1.0f;                                // Y: 0
-		coinPositions[i][2] = static_cast<float>(rand() % 1201);    // Z: 0 to 1200
-	}
-}
-
-
 
 
 // Update function to decrement timer and increment score
@@ -166,14 +130,10 @@ void setCamera() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Calculate the angle to the camera for first-person view
-	float deltaX = cameraX - carPosX;
-	float deltaZ = cameraZ - carPosZ;
-	float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / 3.14159f; // Convert to degrees
-
+	// Adjust camera position based on view mode
 	switch (viewMode) {
-	case 0: // Perspective view (Third-person)
-		gluLookAt(cameraX, cameraY, cameraZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
+	case 0: // Default perspective view
+		gluLookAt(cameraX, cameraY, cameraZ, lookAtX, lookAtY, lookAtZ, 0.0, 1.0, 0.0);
 		break;
 	case 1: // Top view
 		gluLookAt(0.0, 30.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
@@ -184,11 +144,6 @@ void setCamera() {
 	case 3: // Front view
 		gluLookAt(0.0, 7.0, 30.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
 		break;
-	case 4: // First-person view
-		gluLookAt(carPosX, carPosY + 6.5f, carPosZ , // Camera at car position
-			carPosX + sin(angleToCamera), carPosY + 6.5f, carPosZ - cos(angleToCamera), // Looking in the direction of the car
-			0.0, 1.0, 0.0); // Up vector
-		break;
 	}
 }
 
@@ -196,45 +151,27 @@ void setCamera() {
 
 
 
-
-//float moveSpeed = 1.1f; // Speed of the car movement
-
-
-//float moveSpeed = 1.1f; // Speed of the car movement
-
 void specialKeyboard(int key, int x, int y) {
-	if (!timeOver) {
-		if (carPosZ > 600) { moveSpeed = increasedSpeed; }
-		else { moveSpeed = normalSpeed; 
-		}
-		switch (key) {
-		case GLUT_KEY_UP:    // Up arrow key
-			carPosZ -= moveSpeed; // Move car forward along the Z-axis
-			break;
-		case GLUT_KEY_DOWN:  // Down arrow key
-			carPosZ += moveSpeed; // Move car backward along the Z-axis
-			break;
-		case GLUT_KEY_LEFT:  // Left arrow key
-			carPosX -= moveSpeed; // Move car left along the X-axis
-			cameraX += (rand() % 5 - 2) * 0.1f; 
-			cameraY += (rand() % 5 - 2) * 0.1f;
-			break;
-		case GLUT_KEY_RIGHT: // Right arrow key
-			carPosX += moveSpeed; // Move car right along the X-axis
-			cameraX += (rand() % 5 - 2) * 0.1f;
-			cameraY += (rand() % 5 - 2) * 0.1f;
-			break;
-		}
-	}
+	const float moveSpeed = 1.1f; // Speed of the car movement
 
-	// Update camera position to follow the car
-	cameraX = carPosX;
-	cameraZ = carPosZ + 20.0f; // Maintain a fixed distance behind the car
+	switch (key) {
+	case GLUT_KEY_UP:    // Up arrow key
+		carPosZ -= moveSpeed; // Move car forward along the Z-axis
+		break;
+	case GLUT_KEY_DOWN:  // Down arrow key
+		carPosZ += moveSpeed; // Move car backward along the Z-axis
+		break;
+	case GLUT_KEY_LEFT:  // Left arrow key
+		carPosX -= moveSpeed; // Move car left along the X-axis
+		break;
+	case GLUT_KEY_RIGHT: // Right arrow key
+		carPosX += moveSpeed; // Move car right along the X-axis
+		break;
+	}
 
 	setCamera(); // Update the camera to follow the car
 	glutPostRedisplay(); // Request display update after movement
 }
-
 
 
 
@@ -252,7 +189,6 @@ void setupOrthoProjection(int windowWidth, int windowHeight) {
 
 // Initialization function
 void init() {
-
 	glEnable(GL_DEPTH_TEST);
 
 	// Set up lighting (optional)
@@ -264,8 +200,6 @@ void init() {
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	initialCarPosZ = carPosZ;
-
 }
 
 
@@ -311,13 +245,11 @@ Model_3DS model_tree;
 Model_3DS model_coin;
 Model_3DS model_flag;
 Model_3DS model_taxi;
-Model_3DS model_redcar;
-Model_3DS model_policecar;
-Model_3DS model_sky; // Add this with other model declarations
+
+
 
 // Textures
 GLTexture tex_ground;
-//GLTexture tex_sky;
 
 
 //=======================================================================
@@ -382,22 +314,22 @@ void myInit(void)
 	glLoadIdentity();
 
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
-	//*//
+	//*******************************************************************************************//
 	// fovy:			Angle between the bottom and top of the projectors, in degrees.			 //
 	// aspectRatio:		Ratio of width to height of the clipping plane.							 //
 	// zNear and zFar:	Specify the front and back clipping planes distances from camera.		 //
-	//*//
+	//*******************************************************************************************//
 
 	glMatrixMode(GL_MODELVIEW);
 
 	glLoadIdentity();
 
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
-	//*//
+	//*******************************************************************************************//
 	// EYE (ex, ey, ez): defines the location of the camera.									 //
 	// AT (ax, ay, az):	 denotes the direction where the camera is aiming at.					 //
 	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
-	//*//
+	//*******************************************************************************************//
 
 	InitLightSource();
 	InitCarLights();
@@ -432,8 +364,8 @@ void RenderGround()
 	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]);	// Bind the ground texture
 
 	// Set a large rectangle to simulate an infinite ground
-	float groundSize =5000.0f;  // Large ground size for the visible area
-	float textureRepeat = 500.0f; // Texture repetition factor
+	float groundSize = 500.0f;  // Large ground size for the visible area
+	float textureRepeat = 50.0f; // Texture repetition factor
 
 	glPushMatrix();
 	glBegin(GL_QUADS);
@@ -460,7 +392,7 @@ void renderGameOverScreen() {
 	glColor3f(1.0f, 0.0f, 0.0f); // Red "Game Over" text
 
 	// Render "Game Over" message
-	renderText(0.4f, 0.5f, " ", 0.002f);
+	renderText(0.4f, 0.5f, "GAME OVER", 0.002f);
 
 	glFlush(); // Ensure everything is drawn
 }
@@ -515,13 +447,21 @@ float distance(float x1, float z1, float x2, float z2) {
 void checkCollisions() {
 	if (gameOver) return;
 
+// Add these global variables at the top
+float distance(float x1, float z1, float x2, float z2) {
+	return sqrt(pow(x2 - x1, 2) + pow(z2 - z1, 2));
+}
+
+// Modify checkCollisions():
+void checkCollisions() {
+	if (gameOver) return;
+
 	float taxiX = 5, taxiZ = 0;
 	//float toktokX = -10, toktokZ = 0;
 	float collisionRadius = 3.0f;
 
 	if (distance(carPosX, carPosZ, taxiX, taxiZ) < collisionRadius) {
 		if (lives > 0) {
-			playCollisionSound();
 			lives--;
 			carPosX = 0;
 			carPosZ = 0;
@@ -536,23 +476,6 @@ void checkCollisions() {
 
 
 
-//void RenderSkyBox() {
-//	glDisable(GL_LIGHTING);  // Disable lighting for the skybox
-//	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
-//	glBindTexture(GL_TEXTURE_2D, tex_sky); // Bind the skybox texture
-//
-//	glPushMatrix();
-//	glTranslated(carPosX, carPosY, carPosZ); // Center the skybox on the car
-//	GLUquadricObj* qobj = gluNewQuadric();
-//	gluQuadricTexture(qobj, true);
-//	gluQuadricNormals(qobj, GL_SMOOTH);
-//	gluSphere(qobj, 1000.0, 100, 100); // Large enough to encompass the scene
-//	gluDeleteQuadric(qobj);
-//	glPopMatrix();
-//
-//	glDisable(GL_TEXTURE_2D);
-//	glEnable(GL_LIGHTING);  // Re-enable lighting for other objects
-//}
 
 
 //=======================================================================
@@ -569,7 +492,6 @@ void myDisplay(void) {
 		// Draw Ground
 		RenderGround();
 
-		
 		timeElapsed += timeSpeed;
 		float currentIntensity = sunIntensity + intensityVariation * sin(timeElapsed);
 
@@ -585,28 +507,56 @@ void myDisplay(void) {
 		float deltaX = cameraX - carPosX;
 		float deltaZ = cameraZ - carPosZ;
 
-
+		// Calculate the angle between the car and the camera using atan2
 		float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / 3.14159f;
 
-		float modelOffset = 0.0f; // Adjust this value to rotate the car, use 180 to face the other way around
+		float modelOffset = 180.0f; // Adjust this value if needed (try 90, 180, or 270)
+
 		glPushMatrix();
 		glTranslatef(carPosX, carPosY, carPosZ); // Move the car to its position
 		glRotatef(angleToCamera + modelOffset, 0.0f, 1.0f, 0.0f);  // Rotate the car to face the camera
-		glScalef(3.0, 3.0, 3.0);  // Scale the car uniformly to make it bigger
-		model_redcar.Draw();      // Draw the car
+
+		glScalef(10.0, 10.0, 10.0);  // Scale the car uniformly to make it bigger
+		model_house.Draw();          // Draw the car
 		glPopMatrix();
 
 
 		// Draw coin model
-		for (int i = 0; i < numCoins; ++i) {
-			glPushMatrix(); 
-			glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]); 
-			model_coin.Draw(); // Draw the coin 
-			glPopMatrix(); }
+		glPushMatrix();
+		glTranslatef(15, 5, 0); // Adjust Y translation to lift the car above the ground if necessary
+		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		glScalef(1.0, 1.0, 1.0);  // Scale the car uniformly to make it bigger
+		model_coin.Draw();
+		glPopMatrix();
+
+
+		// Draw coin model
+		glPushMatrix();
+		glTranslatef(10, 5, 10); // Adjust Y translation to lift the car above the ground if necessary
+		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		glScalef(1.0, 1.0, 1.0);  // Scale the car uniformly to make it bigger
+		model_coin.Draw();
+		glPopMatrix();
+
+		// Draw coin model
+		glPushMatrix();
+		glTranslatef(10, 25, 0); // Adjust Y translation to lift the car above the ground if necessary
+		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		glScalef(1.0, 1.0, 1.0);  // Scale the car uniformly to make it bigger
+		model_coin.Draw();
+		glPopMatrix();
+
+		// Draw coin model
+		glPushMatrix();
+		glTranslatef(15, 5, 0); // Adjust Y translation to lift the car above the ground if necessary
+		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		glScalef(1.0, 1.0, 1.0);  // Scale the car uniformly to make it bigger
+		model_coin.Draw();
+		glPopMatrix();
 
 		// Draw flag model
 		glPushMatrix();
-		glTranslatef(15, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
+		glTranslatef(15, 3, 0); // Adjust Y translation to lift the car above the ground if necessary
 		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
 		glScalef(0.09, 0.09, 0.09);  // Scale the car uniformly to make it bigger
 		model_flag.Draw();
@@ -620,35 +570,21 @@ void myDisplay(void) {
 		model_taxi.Draw();
 		glPopMatrix();
 
-		// Draw redcar model
-		glPushMatrix();
-		glTranslatef(-10, 0, -1); // Adjust Y translation to lift the car above the ground if necessary
-		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		glScalef(0.09, 0.09,0.09);  // Scale the car uniformly to make it bigger
-		model_policecar.Draw();
-		glPopMatrix();
-
-		
-
-
-
-		
+		//sky box
 		glPushMatrix();
 		GLUquadricObj* qobj;
 		qobj = gluNewQuadric();
-		glTranslated(cameraX, cameraY, cameraZ); // Center the skybox on the camera
+		glTranslated(0, 50, 0);
 		glRotated(90, 1, 0, 1);
-		glBindTexture(GL_TEXTURE_2D, tex); // Make sure to bind the correct texture for the skybox
+		glBindTexture(GL_TEXTURE_2D, tex);
 		gluQuadricTexture(qobj, true);
 		gluQuadricNormals(qobj, GL_SMOOTH);
-		gluSphere(qobj, 1000.0, 100, 100); // Large enough to encompass the scene
+		gluSphere(qobj, 100, 100, 100);
 		gluDeleteQuadric(qobj);
 		glPopMatrix();
 
-
 		UpdateCarLights();
-		float distanceTraveledZ = carPosZ - initialCarPosZ; // Set up orthographic projection for 2D text rendering 
-		//glMatrixMode(GL_PROJECTION); 
+
 
 		glMatrixMode(GL_PROJECTION);
 		glLoadIdentity();
@@ -658,45 +594,11 @@ void myDisplay(void) {
 
 		std::string timerText = "Time Left: " + std::to_string(timer);
 		std::string scoreText = "Score: " + std::to_string(score);
-		std::string distanceText = "Distance Traveled : " + std::to_string(distanceTraveledZ);  
-		renderText(20, 60, timerText, 0.1f); 
+
+		renderText(20, 60, timerText, 0.1f);  // You can adjust the position and size as needed
 		renderText(20, 90, scoreText, 0.1f);
-		renderText(20, 120, distanceText, 0.1f);
-		
-		
-		
 
 	}
-
-	if (gameOver) {
-		glDisable(GL_LIGHTING);
-		glDisable(GL_DEPTH_TEST);
-
-		glMatrixMode(GL_PROJECTION);
-		glPushMatrix();
-		glLoadIdentity();
-		glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
-
-		glMatrixMode(GL_MODELVIEW);
-		glPushMatrix();
-		glLoadIdentity();
-
-		glColor3f(1.0f, 0.0f, 0.0f);
-		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2);
-		char* message = "Game Over!";
-		for (char* c = message; *c != '\0'; c++) {
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
-		}
-
-		glPopMatrix();
-		glMatrixMode(GL_PROJECTION);
-		glPopMatrix();
-
-		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_LIGHTING);
-	}
-	renderLives();
-	checkCollisions();
 
 	if (timeOver) {
 		glDisable(GL_LIGHTING);
@@ -728,6 +630,36 @@ void myDisplay(void) {
 	renderLives();
 	checkCollisions();
 
+	if (gameOver) {
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
+
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+
+		glColor3f(1.0f, 0.0f, 0.0f);
+		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2);
+		char* message = "Game Over!";
+		for (char* c = message; *c != '\0'; c++) {
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+		}
+
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_LIGHTING);
+	}
+	renderLives();
+	checkCollisions();
+
 	glutSwapBuffers();
 }
 
@@ -737,6 +669,7 @@ void myDisplay(void) {
 // Keyboard Function
 //=======================================================================
 // Function to handle key presses for camera control
+// Keyboard callback for camera movement and view switching
 void keyboard(unsigned char key, int x, int y) {
 	const float moveStep = 1.0f;
 
@@ -790,21 +723,16 @@ void myMotion(int x, int y)
 // Mouse Function
 //=======================================================================
 // Mouse Function
-// Mouse Function
-// Mouse Function
 void myMouse(int button, int state, int x, int y)
 {
 	y = HEIGHT - y;  // Adjust y for proper orientation
 
 	if (button == GLUT_RIGHT_BUTTON && state == GLUT_DOWN) {
-		// Toggle between First-Person (4) and Third-Person (0)
-		viewMode = (viewMode == 4) ? 0 : 4; // Assuming 4 is First-Person, 0 is Third-Person
-		setCamera();  // Update the camera to reflect the new view
+		// Toggle between First-Person (0) and Third-Person (1)
+		viewMode = (viewMode == 0) ? 1 : 0;
 		glutPostRedisplay();  // Redraw the scene to update the camera
 	}
 }
-
-
 
 
 
@@ -846,8 +774,6 @@ void LoadAssets()
 	model_coin.Load("Models/coin.3ds");
 	model_flag.Load("Models/flag.3ds");
 	model_taxi.Load("Models/taxi.3ds");
-	model_redcar.Load("Models/redcar/redcar.3DS");
-	model_policecar.Load("Models/police.3ds");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
@@ -860,7 +786,6 @@ void LoadAssets()
 //=======================================================================
 void main(int argc, char** argv)
 {
-
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -868,10 +793,9 @@ void main(int argc, char** argv)
 	glutInitWindowSize(WIDTH, HEIGHT);
 
 	glutInitWindowPosition(100, 150);
-	generateCoinPositions(); // Generate initial coin positions
 
 	glutCreateWindow(title);
-	playBackgroundMusic();
+
 	glutDisplayFunc(myDisplay);
 	glutTimerFunc(1000, update, 0); // Start the update loop
 
@@ -904,9 +828,9 @@ void main(int argc, char** argv)
 // //coins double score
 //collesion with any collectible and the car 
 // odstecle in environment 1 cars
-// collision with any obstical lose one life  and make a sound effect #################################
-// player has 3 lives ############################################################
-// if player lose all lifes game end  ##################################################################
+// collision with any obstical lose one life  and make a sound effect 
+// player has 3 lives
+// if player lose all lifes game end 
 //set collectables and obstecalles position 
 // 
 // 
@@ -914,15 +838,16 @@ void main(int argc, char** argv)
 // 
 // 
 // rahma
-// camera shake when  the car get left or right for 1 sec ##############################
-// when i exceed the flag speed up ##########################################
-//display distance  ###############################################
+// first and third person view and switch by rigth click
+// camera shake when  the car get left or right for 1 sec 
+// when i exceed the flag speed up
+//display distance 
 //z<100 1k first environment
-//z=100 flage  ####################################################
+//z=100 flage 
 //z>100 display environment 2 
 //z=2oo 2k finish line game win timer stop 
-//  set camera and their animations 
-// game win 
+//  set camera and their animations
+// game win
 // 
 // 
 // 
@@ -932,9 +857,9 @@ void main(int argc, char** argv)
 // start point 
 //end point
 // car lights
-//environment 1 
+//environment 1
 //display score increase by one every two seconds ####################################
 //timer  1 min ##########################################
 // game over #######################################
-// environment 2 new obsistecale slow dowm for 10 sec and new collectable  
+// environment 2 new obsistecale slow dowm for 10 sec and new collectable 
 //
