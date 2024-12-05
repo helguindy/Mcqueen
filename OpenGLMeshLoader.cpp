@@ -312,8 +312,8 @@ Model_3DS model_coin;
 Model_3DS model_flag;
 Model_3DS model_taxi;
 Model_3DS model_redcar;
-
-
+Model_3DS model_policecar;
+Model_3DS model_sky; // Add this with other model declarations
 
 // Textures
 GLTexture tex_ground;
@@ -621,12 +621,15 @@ void myDisplay(void) {
 		glPopMatrix();
 
 		// Draw redcar model
-		//glPushMatrix();
-		//glTranslatef(5, 0, 1); // Adjust Y translation to lift the car above the ground if necessary
-		//glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		//glScalef(3, 3,3);  // Scale the car uniformly to make it bigger
-		//model_redcar.Draw();
-		//glPopMatrix();
+		glPushMatrix();
+		glTranslatef(-10, 0, -1); // Adjust Y translation to lift the car above the ground if necessary
+		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		glScalef(0.09, 0.09,0.09);  // Scale the car uniformly to make it bigger
+		model_policecar.Draw();
+		glPopMatrix();
+
+		
+
 
 
 		
@@ -844,6 +847,7 @@ void LoadAssets()
 	model_flag.Load("Models/flag.3ds");
 	model_taxi.Load("Models/taxi.3ds");
 	model_redcar.Load("Models/redcar/redcar.3DS");
+	model_policecar.Load("Models/police.3ds");
 
 	// Loading texture files
 	tex_ground.Load("Textures/ground.bmp");
