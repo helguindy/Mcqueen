@@ -13,6 +13,7 @@
 
 
 
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -43,12 +44,20 @@ float increasedSpeed = 2.2f; // Increased speed after Z = 600
 float moveSpeed = normalSpeed; // Initial move speed
 const int numCoins = 10; // Number of coins
 float coinPositions[numCoins][3]; // Array to store coin positions (X, Y, Z)
+const int numTaxis = 7; // Number of taxis
+const int numPoliceCars = 7; // Number of police cars
+float taxiPositions[numTaxis][3]; // Array to store taxi positions (X, Y, Z)
+float policeCarPositions[numPoliceCars][3]; // Array to store police car positions (X, Y, Z)
+int score = 0; // Initial score
+bool scoreDoubled = false; // Flag to indicate if the score has been doubled
+bool gameWin = false; // Flag to track game win state
+
 
 
 
 
 int timer = 60; // Countdown timer in seconds
-int score = 0;  // Player score
+
 
 void playCollisionSound() {
 	PlaySound(TEXT("C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\bgsong.wav"), NULL, SND_ASYNC);
@@ -63,7 +72,7 @@ void playBackgroundMusic() {
 }
 
 void updateGame(int value) {
-	if (timer > 0) {
+	if (timer > 0 && !gameWin) {
 		timer--; // Decrement timer by 1 second
 	}
 	else {
@@ -82,6 +91,7 @@ void updateGame(int value) {
 		glutTimerFunc(1000, updateGame, 0);
 	}
 }
+
 void renderText(float x, float y, const std::string& text, float scale) {
 	glDisable(GL_LIGHTING);
 	glColor3f(1.0f, 1.0f, 1.0f); // Set text color to white
@@ -106,6 +116,36 @@ void generateCoinPositions() {
 		coinPositions[i][0] = static_cast<float>(rand() % 41 - 30); // X: -30 to 30
 		coinPositions[i][1] = 1.0f;                                // Y: 0
 		coinPositions[i][2] = static_cast<float>(rand() % 1201);    // Z: 0 to 1200
+	}
+}
+
+void generateCarPositions() {
+	for (int i = 0; i < numTaxis; ++i) {
+		taxiPositions[i][0] = static_cast<float>(rand() % 71 - 50); // X: -40 to 40
+		taxiPositions[i][1] = 0.0f;                                 // Y: 0
+		taxiPositions[i][2] = static_cast<float>(rand() + 5 % 1201);    // Z: 0 to 1200
+	}
+	for (int i = 0; i < numPoliceCars; ++i) {
+		policeCarPositions[i][0] = static_cast<float>(rand() % 81 - 40); // X: -40 to 40
+		policeCarPositions[i][1] = 0.0f;                                 // Y: 0
+		policeCarPositions[i][2] = static_cast<float>(rand() % 1201);    // Z: 0 to 1200
+	}
+}
+
+void checkCoinCollisions() {
+	float coinCollisionRadius = 6.0f; // Adjust as needed for collision detection
+
+	for (int i = 0; i < numCoins; ++i) {
+		float dx = carPosX - coinPositions[i][0];
+		float dz = carPosZ - coinPositions[i][2];
+
+		if (dx * dx + dz * dz < coinCollisionRadius * coinCollisionRadius) {
+			// Collision with a coin detected
+			score *= 2; // Double the score
+
+			// Remove the coin or mark it as collected
+			coinPositions[i][0] = 100000; // Move the coin out of view
+		}
 	}
 }
 
@@ -152,11 +192,9 @@ void UpdateCarLights() {
 	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition);
 }
 
-
 // View mode: 0 = perspective (default), 1 = top view, 2 = side view, 3 = front view
 int viewMode = 0;
 
-// Function to set up the camera
 // Function to set up the camera
 void setCamera() {
 	glMatrixMode(GL_PROJECTION);
@@ -193,26 +231,23 @@ void setCamera() {
 }
 
 
-
-
-
-
-//float moveSpeed = 1.1f; // Speed of the car movement
-
-
-//float moveSpeed = 1.1f; // Speed of the car movement
-
 void specialKeyboard(int key, int x, int y) {
-	if (!timeOver) {
+	if (!timeOver && !gameWin) {
 		if (carPosZ > 600) { moveSpeed = increasedSpeed; }
 		else { moveSpeed = normalSpeed; 
 		}
 		switch (key) {
 		case GLUT_KEY_UP:    // Up arrow key
 			carPosZ -= moveSpeed; // Move car forward along the Z-axis
+			if (carPosZ >= 1500) { 
+				gameWin = true;
+			}
 			break;
 		case GLUT_KEY_DOWN:  // Down arrow key
-			carPosZ += moveSpeed; // Move car backward along the Z-axis
+			carPosZ += moveSpeed; 
+			if (carPosZ >= 1500) {
+				gameWin = true;
+			} // Move car backward along the Z-axis
 			break;
 		case GLUT_KEY_LEFT:  // Left arrow key
 			carPosX -= moveSpeed; // Move car left along the X-axis
@@ -236,10 +271,6 @@ void specialKeyboard(int key, int x, int y) {
 }
 
 
-
-
-
-
 void setupOrthoProjection(int windowWidth, int windowHeight) {
 	glMatrixMode(GL_PROJECTION);
 	glPushMatrix();
@@ -247,7 +278,6 @@ void setupOrthoProjection(int windowWidth, int windowHeight) {
 	glOrtho(0.0f, windowWidth, 0.0f, windowHeight, -1.0f, 1.0f); // 2D orthographic projection
 	glMatrixMode(GL_MODELVIEW);
 }
-
 
 
 // Initialization function
@@ -323,9 +353,7 @@ GLTexture tex_coin;
 //GLTexture tex_sky;
 
 
-//=======================================================================
-// Lighting Configuration Function
-//=======================================================================
+
 void InitLightSource()
 {
 	// Enable Lighting for this OpenGL Program
@@ -352,9 +380,7 @@ void InitLightSource()
 	glLightfv(GL_LIGHT0, GL_POSITION, light_position);
 }
 
-//=======================================================================
-// Material Configuration Function
-//======================================================================
+
 void InitMaterial()
 {
 	// Enable Material Tracking
@@ -373,9 +399,7 @@ void InitMaterial()
 	glMaterialfv(GL_FRONT, GL_SHININESS, shininess);
 }
 
-//=======================================================================
-// OpengGL Configuration Function
-//=======================================================================
+
 void myInit(void)
 {
 	glClearColor(0.0, 0.0, 0.0, 0.0);
@@ -421,9 +445,6 @@ void myInit(void)
 	glEnable(GL_LIGHT0);
 }
 
-//=======================================================================
-// Render Ground Function
-//=======================================================================
 void RenderGround()
 {
 	glDisable(GL_LIGHTING);	// Disable lighting 
@@ -518,26 +539,49 @@ float distance(float x1, float z1, float x2, float z2) {
 void checkCollisions() {
 	if (gameOver) return;
 
-	float taxiX = 5, taxiZ = 0;
-	//float toktokX = -10, toktokZ = 0;
-	float collisionRadius = 3.0f;
+	float collisionRadius = 7.0f;
+	float bounceDistance = 10.0f;
 
-	if (distance(carPosX, carPosZ, taxiX, taxiZ) < collisionRadius) {
-		if (lives > 0) {
-			playCollisionSound();
-			lives--;
-			carPosX = 0;
-			carPosZ = 0;
-			if (lives == 0) {
-				gameOver = true;
+	// Check collisions with taxis
+	for (int i = 0; i < numTaxis; ++i) {
+		if (distance(carPosX, carPosZ, taxiPositions[i][0], taxiPositions[i][2]) < collisionRadius) {
+			if (lives > 0) {
+				playCollisionSound();
+				lives--;
+				float deltaX = carPosX - taxiPositions[i][0]; 
+				float deltaZ = carPosZ - taxiPositions[i][2]; 
+				float length = sqrt(deltaX * deltaX + deltaZ * deltaZ); // Normalize the direction and apply the bounce 
+				deltaX /= length; 
+				deltaZ /= length; 
+				carPosX += deltaX * bounceDistance; 
+				carPosZ += deltaZ * bounceDistance;
+				if (lives == 0) {
+					gameOver = true;
+				}
 			}
 		}
 	}
 
-
+	// Check collisions with police cars
+	for (int i = 0; i < numPoliceCars; ++i) {
+		if (distance(carPosX, carPosZ, policeCarPositions[i][0], policeCarPositions[i][2]) < collisionRadius) {
+			if (lives > 0) {
+				playCollisionSound();
+				lives--;
+				float deltaX = carPosX - taxiPositions[i][0];
+				float deltaZ = carPosZ - taxiPositions[i][2];
+				float length = sqrt(deltaX * deltaX + deltaZ * deltaZ); // Normalize the direction and apply the bounce 
+				deltaX /= length;
+				deltaZ /= length;
+				carPosX += deltaX * bounceDistance;
+				carPosZ += deltaZ * bounceDistance;
+				if (lives == 0) {
+					gameOver = true;
+				}
+			}
+		}
+	}
 }
-
-
 
 //void RenderSkyBox() {
 //	glDisable(GL_LIGHTING);  // Disable lighting for the skybox
@@ -569,38 +613,47 @@ void setGoldMaterial() {
 	glMaterialfv(GL_FRONT, GL_SHININESS, gold_shininess);
 }
 
-//=======================================================================
-// Display Function
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setCamera();
 
-	if (gameOver) {
-		// Display Game Over Text
-		renderGameOverScreen();
-	}
-	else {
+	if (gameOver) { renderGameOverScreen(); }
+	else if (gameWin) { // Display "Game Win" message and score 
+		glDisable(GL_LIGHTING); 
+		glDisable(GL_DEPTH_TEST); 
+		glMatrixMode(GL_PROJECTION); 
+		glPushMatrix(); glLoadIdentity(); 
+		glOrtho(0, WIDTH, 0, HEIGHT, -1, 1); 
+		glMatrixMode(GL_MODELVIEW); 
+		glPushMatrix(); 
+		glLoadIdentity(); 
+		glColor3f(0.0f, 1.0f, 0.0f); // Green "Game Win" text 
+		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2); 
+		char* winMessage = "You Win!"; 
+		for (char* c = winMessage; *c != '\0'; c++) { 
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c); 
+		} 
+		glPopMatrix(); 
+		glMatrixMode(GL_PROJECTION); 
+		glPopMatrix(); 
+		glEnable(GL_DEPTH_TEST); 
+		glEnable(GL_LIGHTING); 
+	} else {
 		// Draw Ground
 		RenderGround();
 
-		
 		timeElapsed += timeSpeed;
 		float currentIntensity = sunIntensity + intensityVariation * sin(timeElapsed);
 
-		// Update the sunlight intensity
 		GLfloat lightIntensity[] = { currentIntensity, currentIntensity, currentIntensity, 1.0f };
 		GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
 		glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 		glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
 
-
 		// Draw car model
-	// Assuming your camera is at position (cameraX, cameraZ)
 		float deltaX = cameraX - carPosX;
 		float deltaZ = cameraZ - carPosZ;
-
-
-		float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / 3.14159f;
+		float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / M_PI;
 
 		float modelOffset = 0.0f; // Adjust this value to rotate the car, use 180 to face the other way around
 		glPushMatrix();
@@ -610,109 +663,89 @@ void myDisplay(void) {
 		model_redcar.Draw();      // Draw the car
 		glPopMatrix();
 
-
-		//// Draw coin model
-		//for (int i = 0; i < numCoins; ++i) {
-		//	glPushMatrix(); 
-		//	glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]); 
-		//	model_coin.Draw(); // Draw the coin 
-		//	glPopMatrix(); }
-
+		// Draw coin model
 		for (int i = 0; i < numCoins; ++i) {
 			glPushMatrix();
 			glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]);
+			model_coin.Draw(); // Draw the coin
+			glPopMatrix();
+		}
 
-			// Add rotation to make the coin spin
-			static float rotation = 0.0f;
-			rotation += 5.0f;  // Adjust speed of rotation
-			glRotatef(rotation, 0.0f, 1.0f, 0.0f);
+		for (int i = 0; i < numTaxis; ++i) {
+			glPushMatrix();
+			glTranslatef(taxiPositions[i][0], taxiPositions[i][1], taxiPositions[i][2]);
+			glRotatef(-90.f, 0, 1, 0); // Rotate to make the car stand on its wheels
+			glScalef(0.059, 0.059, 0.059); // Scale the car uniformly to make it bigger
+			model_taxi.Draw(); // Draw the taxi
+			glPopMatrix();
+		}
 
-			// Apply gold material
-			setGoldMaterial();
-
-			// Scale the coin if needed
-			glScalef(0.5f, 0.5f, 0.5f);  // Adjust scale values as needed
-
-			model_coin.Draw();
+		for (int i = 0; i < numPoliceCars; ++i) {
+			glPushMatrix();
+			glTranslatef(policeCarPositions[i][0], policeCarPositions[i][1], policeCarPositions[i][2]);
+			glRotatef(-90.f, 0, 1, 0); // Rotate to make the car stand on its wheels
+			glScalef(0.09, 0.09, 0.09); // Scale the car uniformly to make it bigger
+			model_policecar.Draw();
 			glPopMatrix();
 		}
 
 		// Draw flag model
 		glPushMatrix();
-		glTranslatef(15, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
+		glTranslatef(0, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
 		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
 		glScalef(0.09, 0.09, 0.09);  // Scale the car uniformly to make it bigger
 		model_flag.Draw();
 		glPopMatrix();
 
-
-		// Draw flag model
-		glPushMatrix();
-		glTranslatef(5, 0, 6); // Adjust Y translation to lift the car above the ground if necessary
-		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		glScalef(0.01, 0.01, 0.01);  // Scale the car uniformly to make it bigger
-		model_banner.Draw();
-		glPopMatrix();
-		// Draw flag model
-		glPushMatrix();
-		glTranslatef(5, 0, 1); // Adjust Y translation to lift the car above the ground if necessary
-		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		glScalef(0.059, 0.059, 0.059);  // Scale the car uniformly to make it bigger
-		model_taxi.Draw();
-		glPopMatrix();
-
-		// Draw redcar model
-		glPushMatrix();
-		glTranslatef(-10, 0, -1); // Adjust Y translation to lift the car above the ground if necessary
-		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		glScalef(0.09, 0.09,0.09);  // Scale the car uniformly to make it bigger
-		model_policecar.Draw();
-		glPopMatrix();
-
-		
-		// Draw flag model
-		glPushMatrix();
-		glTranslatef(-50, 3, 1); // Adjust Y translation to lift the car above the ground if necessary
-		glRotatef(-90.f, 90.f, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		glScalef(0.5, 0.5, 0.5);  // Scale the car uniformly to make it bigger
-		model_gem.Draw();
-		glPopMatrix();
-
-
-		
-		glPushMatrix();
-		GLUquadricObj* qobj;
-		qobj = gluNewQuadric();
-		glTranslated(cameraX, cameraY, cameraZ); // Center the skybox on the camera
-		glRotated(90, 1, 0, 1);
-		glBindTexture(GL_TEXTURE_2D, tex); // Make sure to bind the correct texture for the skybox
-		gluQuadricTexture(qobj, true);
-		gluQuadricNormals(qobj, GL_SMOOTH);
-		gluSphere(qobj, 1000.0, 100, 100); // Large enough to encompass the scene
-		gluDeleteQuadric(qobj);
-		glPopMatrix();
-
-
-		UpdateCarLights();
-		float distanceTraveledZ = carPosZ - initialCarPosZ; // Set up orthographic projection for 2D text rendering 
-		//glMatrixMode(GL_PROJECTION); 
-
+		// Set up orthographic projection for text rendering
 		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
 		glLoadIdentity();
-		gluOrtho2D(0.0, 800.0, 0.0, 600.0); // Adjust based on window dimensions
+		gluOrtho2D(0.0, WIDTH, 0.0, HEIGHT);
 		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+
+		// Render the environment text at the top
+		glDisable(GL_LIGHTING);
+		if (carPosZ < 600) {
+			renderText(30, 550, "Environment 1", 0.3f); // Adjust position if necessary
+		}
+		else {
+			renderText(30, 550, "Environment 2", 0.3f); // Adjust position if necessary
+		}
+		glEnable(GL_LIGHTING);
+
+		// Restore previous projection and modelview matrices
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+
+		// Additional text rendering
+		float distanceTraveledZ = carPosZ - initialCarPosZ;
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		gluOrtho2D(0.0, WIDTH, 0.0, HEIGHT);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
 		glLoadIdentity();
 
 		std::string timerText = "Time Left: " + std::to_string(timer);
 		std::string scoreText = "Score: " + std::to_string(score);
-		std::string distanceText = "Distance Traveled : " + std::to_string(distanceTraveledZ);  
-		renderText(20, 60, timerText, 0.1f); 
+		std::string distanceText = "Distance Traveled : " + std::to_string(distanceTraveledZ);
+		renderText(20, 60, timerText, 0.1f);
 		renderText(20, 90, scoreText, 0.1f);
 		renderText(20, 120, distanceText, 0.1f);
-		
-		
-		
 
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glMatrixMode(GL_MODELVIEW);
+
+		UpdateCarLights();
+		checkCoinCollisions(); // Check for coin collisions
 	}
 
 	if (gameOver) {
@@ -742,8 +775,6 @@ void myDisplay(void) {
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_LIGHTING);
 	}
-	renderLives();
-	checkCollisions();
 
 	if (timeOver) {
 		glDisable(GL_LIGHTING);
@@ -758,7 +789,7 @@ void myDisplay(void) {
 		glPushMatrix();
 		glLoadIdentity();
 
-		glColor3f(1.0f, 0.0f, 0.0f);
+		glColor3f(1.0f, 1.0f, 1.0f);
 		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2);
 		char* message = "Time Over!";
 		for (char* c = message; *c != '\0'; c++) {
@@ -772,6 +803,7 @@ void myDisplay(void) {
 		glEnable(GL_DEPTH_TEST);
 		glEnable(GL_LIGHTING);
 	}
+
 	renderLives();
 	checkCollisions();
 
@@ -780,10 +812,8 @@ void myDisplay(void) {
 
 
 
-//=======================================================================
-// Keyboard Function
-//=======================================================================
-// Function to handle key presses for camera control
+
+
 void keyboard(unsigned char key, int x, int y) {
 	const float moveStep = 1.0f;
 
@@ -803,9 +833,7 @@ void keyboard(unsigned char key, int x, int y) {
 
 	glutPostRedisplay();
 }
-//=======================================================================
-// Motion Function
-//=======================================================================
+
 void myMotion(int x, int y)
 {
 	y = HEIGHT - y;
@@ -833,12 +861,7 @@ void myMotion(int x, int y)
 	glutPostRedisplay();	//Re-draw scene 
 }
 
-//=======================================================================
-// Mouse Function
-//=======================================================================
-// Mouse Function
-// Mouse Function
-// Mouse Function
+
 void myMouse(int button, int state, int x, int y)
 {
 	y = HEIGHT - y;  // Adjust y for proper orientation
@@ -852,13 +875,6 @@ void myMouse(int button, int state, int x, int y)
 }
 
 
-
-
-
-
-//=======================================================================
-// Reshape Function
-//=======================================================================
 void myReshape(int w, int h)
 {
 	if (h == 0) {
@@ -882,9 +898,6 @@ void myReshape(int w, int h)
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
 }
 
-//=======================================================================
-// Assets Loading Function
-//=======================================================================
 void LoadAssets()
 {
 	// Loading Model files
@@ -904,9 +917,6 @@ void LoadAssets()
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
 
-//=======================================================================
-// Main Function
-//=======================================================================
 void main(int argc, char** argv)
 {
 
@@ -914,10 +924,11 @@ void main(int argc, char** argv)
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
-	glutInitWindowSize(WIDTH, HEIGHT);
+	glutInitWindowSize(WIDTH, HEIGHT); //hi
 
 	glutInitWindowPosition(100, 150);
 	generateCoinPositions(); // Generate initial coin positions
+	generateCarPositions(); // Generate initial car positions
 
 	glutCreateWindow(title);
 	playBackgroundMusic();
@@ -950,13 +961,13 @@ void main(int argc, char** argv)
 
 // demiana
 // texture gems cars muds finish line 
-// //coins double score
-//collesion with any collectible and the car 
-// odstecle in environment 1 cars
+// //coins double score ################################################
+//collesion with any collectible and the car ##################################
+// odstecle in environment 1 cars #####################################
 // collision with any obstical lose one life  and make a sound effect #################################
 // player has 3 lives ############################################################
 // if player lose all lifes game end  ##################################################################
-//set collectables and obstecalles position 
+//set collectables and obstecalles position ################### 
 // 
 // 
 // 
@@ -966,12 +977,12 @@ void main(int argc, char** argv)
 // camera shake when  the car get left or right for 1 sec ##############################
 // when i exceed the flag speed up ##########################################
 //display distance  ###############################################
-//z<100 1k first environment
+//z<100 1k first environment ################################
 //z=100 flage  ####################################################
-//z>100 display environment 2 
+//z>100 display environment 2 ########################################
 //z=2oo 2k finish line game win timer stop 
 //  set camera and their animations 
-// game win 
+// game win ##############################################
 // 
 // 
 // 
