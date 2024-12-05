@@ -861,7 +861,7 @@ void main(int argc, char** argv)
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
-	glutInitWindowSize(WIDTH, HEIGHT);
+	glutInitWindowSize(WIDTH, HEIGHT); //hi
 
 	glutInitWindowPosition(100, 150);
 	generateCoinPositions(); // Generate initial coin positions
