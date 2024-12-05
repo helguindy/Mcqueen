@@ -309,14 +309,17 @@ int cameraZoom = 0;
 Model_3DS model_house;
 Model_3DS model_tree;
 Model_3DS model_coin;
+Model_3DS model_gem;
 Model_3DS model_flag;
 Model_3DS model_taxi;
 Model_3DS model_redcar;
 Model_3DS model_policecar;
 Model_3DS model_sky; // Add this with other model declarations
+Model_3DS model_banner;
 
 // Textures
 GLTexture tex_ground;
+GLTexture tex_coin;
 //GLTexture tex_sky;
 
 
@@ -553,7 +556,18 @@ void checkCollisions() {
 //	glDisable(GL_TEXTURE_2D);
 //	glEnable(GL_LIGHTING);  // Re-enable lighting for other objects
 //}
+void setGoldMaterial() {
+	// Gold material properties
+	GLfloat gold_ambient[] = { 0.24725f, 0.1995f, 0.0745f, 1.0f };
+	GLfloat gold_diffuse[] = { 0.75164f, 0.60648f, 0.22648f, 1.0f };
+	GLfloat gold_specular[] = { 0.628281f, 0.555802f, 0.366065f, 1.0f };
+	GLfloat gold_shininess[] = { 51.2f };
 
+	glMaterialfv(GL_FRONT, GL_AMBIENT, gold_ambient);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, gold_diffuse);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, gold_specular);
+	glMaterialfv(GL_FRONT, GL_SHININESS, gold_shininess);
+}
 
 //=======================================================================
 // Display Function
@@ -597,12 +611,31 @@ void myDisplay(void) {
 		glPopMatrix();
 
 
-		// Draw coin model
+		//// Draw coin model
+		//for (int i = 0; i < numCoins; ++i) {
+		//	glPushMatrix(); 
+		//	glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]); 
+		//	model_coin.Draw(); // Draw the coin 
+		//	glPopMatrix(); }
+
 		for (int i = 0; i < numCoins; ++i) {
-			glPushMatrix(); 
-			glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]); 
-			model_coin.Draw(); // Draw the coin 
-			glPopMatrix(); }
+			glPushMatrix();
+			glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]);
+
+			// Add rotation to make the coin spin
+			static float rotation = 0.0f;
+			rotation += 5.0f;  // Adjust speed of rotation
+			glRotatef(rotation, 0.0f, 1.0f, 0.0f);
+
+			// Apply gold material
+			setGoldMaterial();
+
+			// Scale the coin if needed
+			glScalef(0.5f, 0.5f, 0.5f);  // Adjust scale values as needed
+
+			model_coin.Draw();
+			glPopMatrix();
+		}
 
 		// Draw flag model
 		glPushMatrix();
@@ -612,6 +645,14 @@ void myDisplay(void) {
 		model_flag.Draw();
 		glPopMatrix();
 
+
+		// Draw flag model
+		glPushMatrix();
+		glTranslatef(5, 0, 6); // Adjust Y translation to lift the car above the ground if necessary
+		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		glScalef(0.01, 0.01, 0.01);  // Scale the car uniformly to make it bigger
+		model_banner.Draw();
+		glPopMatrix();
 		// Draw flag model
 		glPushMatrix();
 		glTranslatef(5, 0, 1); // Adjust Y translation to lift the car above the ground if necessary
@@ -629,7 +670,13 @@ void myDisplay(void) {
 		glPopMatrix();
 
 		
-
+		// Draw flag model
+		glPushMatrix();
+		glTranslatef(-50, 3, 1); // Adjust Y translation to lift the car above the ground if necessary
+		glRotatef(-90.f, 90.f, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		glScalef(0.5, 0.5, 0.5);  // Scale the car uniformly to make it bigger
+		model_gem.Draw();
+		glPopMatrix();
 
 
 		
@@ -848,8 +895,10 @@ void LoadAssets()
 	model_taxi.Load("Models/taxi.3ds");
 	model_redcar.Load("Models/redcar/redcar.3DS");
 	model_policecar.Load("Models/police.3ds");
-
+	model_gem.Load("Models/gem.3ds");
+	model_banner.Load("Models/banner.3ds");
 	// Loading texture files
+	tex_coin.Load("Textures/coin.bmp");
 	tex_ground.Load("Textures/ground.bmp");
 
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
