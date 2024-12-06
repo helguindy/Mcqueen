@@ -1000,7 +1000,8 @@ void LoadAssets()
 	// Loading texture files
 	tex_coin.Load("Textures/coin.bmp");
 	tex_ground.Load("Textures/ground.bmp");
-	tex_flag.Load("Textures/character_flag.bmp");
+	tex_flag.Load("Textures/chharacter_flag.bmp");
+
 
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
