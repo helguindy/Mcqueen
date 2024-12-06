@@ -55,7 +55,11 @@ float jumpProgress = 0.0f; // Progress of the jump (0 to 1)
 bool speedBoostActive = false; // Flag to indicate if the speed boost is active
 float speedBoostTimer = 0.0f;  // Timer for the speed boost duration
 float boostDuration = 5.0f;    // Duration of the speed boost in seconds
-float boostedSpeed = 10.2f; // Increased speed after Z = 600
+float boostedSpeed = 5.2f; // Increased speed after Z = 600
+const int numMuds = 8; // Number of mud patches
+float mudPositions[numMuds][3]; // Array to store mud positions (X, Y, Z)
+bool mudSlowDownActive = false;
+
 
 
 
@@ -90,6 +94,7 @@ void playBackgroundMusic() {
 void updateGame(int value) {
 	if (timer > 0 && !gameWin) {
 		timer--; // Decrement timer by 1 second
+		score++;
 	}
 	else {
 		if (!gameWin) { // Only set timeOver if the game has not been won 
@@ -150,8 +155,17 @@ void generateCarPositions() {
 	}
 }
 
+void generateMudPositions() {
+	for (int i = 0; i < numMuds; ++i) {
+		mudPositions[i][0] = static_cast<float>(rand() % 41 - 20); // X: -20 to 20
+		mudPositions[i][1] = 0.0f;                                // Y: 0 (on the ground)
+		mudPositions[i][2] = 600.0f + static_cast<float>(i) * ((1500.0f - 600.0f) / numMuds); // Evenly spaced between 600 and 1500
+	}
+}
+
+
 void checkCoinCollisions() {
-	float coinCollisionRadius = 10.0f; // Adjust as needed for collision detection
+	float coinCollisionRadius = 7.0f; // Adjust as needed for collision detection
 
 	for (int i = 0; i < numCoins; ++i) {
 		float dx = carPosX - coinPositions[i][0];
@@ -166,6 +180,29 @@ void checkCoinCollisions() {
 		}
 	}
 }
+
+void checkMudCollisions() {
+	float mudCollisionRadiusX = 17.0f; // Collision radius for the x-axis
+	float mudCollisionRadiusZ = 5.0f; // Reduced collision radius for the z-axis
+
+	for (int i = 0; i < numMuds; ++i) {
+		float dx = carPosX - mudPositions[i][0];
+		float dz = carPosZ - mudPositions[i][2];
+
+		// Adjust the collision check to be more strict on the z-axis
+		if ((dx * dx < mudCollisionRadiusX * mudCollisionRadiusX) && (dz * dz < mudCollisionRadiusZ * mudCollisionRadiusZ)) {
+			std::cout << "Mud collision detected! Car slowing down.\n"; // Debug print
+			moveSpeed = 0.5f; // Slow down the car
+			mudSlowDownActive = true; // Activate slow down flag
+			break; // Exit loop once a collision is detected
+		}
+		else {
+			mudSlowDownActive = false; // Deactivate slow down if no collision
+		}
+	}
+}
+
+
 
 const int numGems = 5; // Number of gems
 float gemPositions[numGems][3]; // Array to store gem positions (X, Y, Z)
@@ -184,15 +221,17 @@ void generateGemPositions() {
 void update(int value) {
 	if (timer > 0) {
 		timer--; // Decrement the timer
-		score++; // Increment the score for demonstration
-
+		score++; 
 		// Handle speed boost duration
 		if (speedBoostActive) {
 			speedBoostTimer -= 1.0f;
+			moveSpeed = boostedSpeed;
 			if (speedBoostTimer <= 0) {
 				speedBoostActive = false;
-				moveSpeed = normalSpeed; // Reset speed to normal
+				moveSpeed = normalSpeed; // Reset speed to normal after boost ends
+				std::cout << "Speed boost ended. Back to normal speed.\n"; // Debug print
 			}
+			
 		}
 	}
 	else {
@@ -202,6 +241,7 @@ void update(int value) {
 	glutPostRedisplay(); // Redraw the screen
 	glutTimerFunc(1000, update, 0); // Call this function every second
 }
+
 
 
 void InitCarLights() {
@@ -272,25 +312,35 @@ void setCamera() {
 
 void specialKeyboard(int key, int x, int y) {
 	if (!timeOver && !gameWin) {
-		if (carPosZ > 600) { moveSpeed = increasedSpeed; }
-		else { moveSpeed = normalSpeed; 
+		if (carPosZ > 600) {
+			moveSpeed = increasedSpeed;
 		}
+		else {
+			moveSpeed = normalSpeed;
+		}
+		if (mudSlowDownActive) { 
+			moveSpeed = 0.2f; 
+		}
+		else if (speedBoostActive) { // Check if speed boost is active 
+			moveSpeed = boostedSpeed; 
+		}
+
 		switch (key) {
 		case GLUT_KEY_DOWN:    // Up arrow key
 			carPosZ -= moveSpeed; // Move car forward along the Z-axis
-			if (carPosZ >= 1500) { 
+			if (carPosZ >= 1500) {
 				gameWin = true;
 			}
 			break;
 		case GLUT_KEY_UP:  // Down arrow key
-			carPosZ += moveSpeed; 
+			carPosZ += moveSpeed;
 			if (carPosZ >= 1500) {
 				gameWin = true;
 			} // Move car backward along the Z-axis
 			break;
 		case GLUT_KEY_RIGHT:  // Left arrow key
 			carPosX -= moveSpeed; // Move car left along the X-axis
-			cameraX += (rand() % 5 - 2) * 0.1f; 
+			cameraX += (rand() % 5 - 2) * 0.1f;
 			cameraY += (rand() % 5 - 2) * 0.1f;
 			break;
 		case GLUT_KEY_LEFT: // Right arrow key
@@ -300,14 +350,13 @@ void specialKeyboard(int key, int x, int y) {
 			break;
 		}
 	}
-
-	// Update camera position to follow the car
 	cameraX = carPosX;
 	cameraZ = carPosZ + 20.0f; // Maintain a fixed distance behind the car
 
 	setCamera(); // Update the camera to follow the car
 	glutPostRedisplay(); // Request display update after movement
 }
+
 
 
 void setupOrthoProjection(int windowWidth, int windowHeight) {
@@ -407,6 +456,7 @@ void checkGemCollisions() {
 		float dz = carPosZ - gemPositions[i][2];
 
 		if (dx * dx + dz * dz < gemCollisionRadius * gemCollisionRadius) {
+			std::cout << "Gem collected! Speed boost activated.\n";
 			// Collision with a gem detected
 			moveSpeed = boostedSpeed; // Apply speed boost
 			speedBoostActive = true;    // Activate speed boost
@@ -801,8 +851,13 @@ void myDisplay(void) {
 			glPopMatrix();
 		}
 
-
-
+		for (int i = 0; i < numMuds; ++i) {
+			glPushMatrix();
+			glTranslatef(mudPositions[i][0], mudPositions[i][1], mudPositions[i][2]);
+			glScalef(1.9, 0.1, 1.9);  // Scale the mud appropriately
+			model_mud.Draw(); // Draw the mud patch
+			glPopMatrix();
+		}
 
 
 		// Draw flag model
@@ -828,12 +883,12 @@ void myDisplay(void) {
 		//------------------------------
 
 		// Draw mud model
-		glPushMatrix();
-		glTranslatef(3, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
-		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		glScalef(0.9, 0.9, 0.9);  // Scale the car uniformly to make it bigger
-		model_mud.Draw();
-		glPopMatrix();
+		//glPushMatrix();
+		//glTranslatef(3, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
+		//glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		//glScalef(0.9, 0.9, 0.9);  // Scale the car uniformly to make it bigger
+		//model_mud.Draw();
+		//glPopMatrix();
 		 
 		// Set up orthographic projection for text rendering
 		glMatrixMode(GL_PROJECTION);
@@ -885,6 +940,7 @@ void myDisplay(void) {
 		UpdateCarLights();
 		checkCoinCollisions(); // Check for coin collisions
 		checkGemCollisions();
+		checkMudCollisions();
 	}
 
 	if (gameOver) {
@@ -945,6 +1001,7 @@ void myDisplay(void) {
 
 	renderLives();
 	checkCollisions();
+	//checkMudCollisions();
 
 	glutSwapBuffers();
 }
@@ -1064,7 +1121,7 @@ void LoadAssets()
 
 void main(int argc, char** argv)
 {
-	//playBackgroundMusic();
+	playBackgroundMusic();
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -1075,6 +1132,7 @@ void main(int argc, char** argv)
 	generateCoinPositions(); // Generate initial coin positions
 	generateCarPositions(); // Generate initial car positions
 	generateGemPositions();
+	generateMudPositions();
 
 	glutCreateWindow(title);
 
