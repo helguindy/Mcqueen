@@ -21,7 +21,8 @@
 int lives = 6;
 float initialCarPosZ = 0.0f;
 
-
+float coinRotationAngle = 0.0f;
+const float COIN_ROTATION_SPEED = 100.0f;
 // Camera position and orientation variables
 float cameraX = 0.0f, cameraY = 7.0f, cameraZ = 20.0f; // Initial position
 float lookAtX = 0.0f, lookAtY = 0.0f, lookAtZ = 0.0f;  // Look-at point
@@ -44,8 +45,8 @@ float increasedSpeed = 1.7f; // Increased speed after Z = 600
 float moveSpeed = normalSpeed; // Initial move speed
 const int numCoins = 10; // Number of coins
 float coinPositions[numCoins][3]; // Array to store coin positions (X, Y, Z)
-const int numTaxis = 7; // Number of taxis
-const int numPoliceCars = 7; // Number of police cars
+const int numTaxis = 10; // Number of taxis
+const int numPoliceCars = 10; // Number of police cars
 float taxiPositions[numTaxis][3]; // Array to store taxi positions (X, Y, Z)
 float policeCarPositions[numPoliceCars][3]; // Array to store police car positions (X, Y, Z)
 int score = 0; // Initial score
@@ -59,7 +60,31 @@ float boostedSpeed = 5.2f; // Increased speed after Z = 600
 const int numMuds = 8; // Number of mud patches
 float mudPositions[numMuds][3]; // Array to store mud positions (X, Y, Z)
 bool mudSlowDownActive = false;
+float startLightIntensity = 2.0f; // Starting intensity (very bright)
+float endLightIntensity = 0.01f;   // Final intensity (very dark)
+float currentLightIntensity = startLightIntensity; // Current light intensity
+float headlightStartIntensity = 0.01f; // Initial intensity (dark)
+float headlightEndIntensity = 2.0f;   // Final intensity (bright)
+float headlightCurrentIntensity = headlightStartIntensity; // Current headlight intensity
+bool needShake = false; // Global flag to control camera shake
 
+
+// Model Variables
+Model_3DS model_house;
+Model_3DS model_tree;
+Model_3DS model_coin;
+Model_3DS model_gem;
+Model_3DS model_flag;
+Model_3DS model_taxi;
+Model_3DS model_mcqueen;
+Model_3DS model_policecar;
+Model_3DS model_sky; // Add this with other model declarations
+Model_3DS model_mud;
+Model_3DS model_finish;
+// Textures
+GLTexture tex_ground;
+GLTexture tex_coin;
+GLTexture tex_flag;  // Add this line
 
 
 
@@ -163,7 +188,6 @@ void generateMudPositions() {
 	}
 }
 
-
 void checkCoinCollisions() {
 	float coinCollisionRadius = 7.0f; // Adjust as needed for collision detection
 
@@ -202,6 +226,48 @@ void checkMudCollisions() {
 	}
 }
 
+void drawCircle(float cx, float cy, float r, int num_segments) {
+	glBegin(GL_TRIANGLE_FAN);
+	for (int i = 0; i <= num_segments; i++) {
+		float theta = 2.0f * M_PI * float(i) / float(num_segments); // get the current angle
+		float x = r * cosf(theta); // calculate the x component
+		float y = r * sinf(theta); // calculate the y component
+		glVertex2f(x + cx, y + cy); // output vertex
+	}
+	glEnd();
+}
+
+void drawHeadlights() {
+	float headlightXOffset = 0.5f;
+	float headlightYOffset = 0.5f;
+	float headlightZOffset = 2.5f; // Adjust to the front of the car
+
+	// Set emission property for headlights to ensure they are always bright
+	GLfloat emission[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // Bright white
+	glMaterialfv(GL_FRONT, GL_EMISSION, emission);
+
+	// Draw left headlight using gem model
+	glPushMatrix();
+	glTranslatef(headlightXOffset, headlightYOffset, headlightZOffset);
+	glRotatef(90.0f, 1.0f, 0.0f, 0.0f); // Rotate gem 90 degrees around the Z-axis
+	glScalef(0.7, 0.7, 0.7); // Scale down the gem to fit as a headlight
+	glRotatef(0.0f, 0.0f, coinRotationAngle, 0.0f);  // Rotate around Y axis
+	model_gem.Draw(); // Draw the gem model as the headlight
+	glPopMatrix();
+
+	// Draw right headlight using gem model
+	glPushMatrix();
+	glTranslatef(-headlightXOffset, headlightYOffset, headlightZOffset);
+	glRotatef(90.0f, 1.0f, 0.0f, 0.0f); // Rotate gem 90 degrees around the Z-axis
+	glScalef(0.7, 0.7, 0.7); // Scale down the gem to fit as a headlight
+	model_gem.Draw(); // Draw the gem model as the headlight
+	glPopMatrix();
+
+	// Reset emission to zero
+	GLfloat noEmission[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	glMaterialfv(GL_FRONT, GL_EMISSION, noEmission);
+}
+
 
 const int numGems = 5; // Number of gems
 float gemPositions[numGems][3]; // Array to store gem positions (X, Y, Z)
@@ -215,12 +281,18 @@ void generateGemPositions() {
 }
 
 
-
 // Update function to decrement timer and increment score
 void update(int value) {
 	if (timer > 0) {
 		timer--; // Decrement the timer
-		score++; 
+		score++;
+		float timeFraction = 1.0f - static_cast<float>(timer) / 60.0f; // Assuming timer starts at 60 
+		currentLightIntensity = startLightIntensity * (1.0f - timeFraction) + endLightIntensity * timeFraction;
+		headlightCurrentIntensity = headlightStartIntensity * (1.0f - timeFraction) + headlightEndIntensity * timeFraction;
+		coinRotationAngle += COIN_ROTATION_SPEED;
+		if (coinRotationAngle >= 360.0f) {
+			coinRotationAngle = 0.0f;
+		}
 		// Handle speed boost duration
 		if (speedBoostActive) {
 			speedBoostTimer -= 1.0f;
@@ -230,7 +302,7 @@ void update(int value) {
 				moveSpeed = normalSpeed; // Reset speed to normal after boost ends
 				std::cout << "Speed boost ended. Back to normal speed.\n"; // Debug print
 			}
-			
+
 		}
 	}
 	else {
@@ -240,7 +312,6 @@ void update(int value) {
 	glutPostRedisplay(); // Redraw the screen
 	glutTimerFunc(1000, update, 0); // Call this function every second
 }
-
 
 
 void InitCarLights() {
@@ -264,15 +335,16 @@ void InitCarLights() {
 }
 
 // Update the car lights' position and direction
-void UpdateCarLights() {
-	GLfloat lightPosition[] = { carPosX, 1.0f, carPosZ, 1.0f }; // Slightly above the car
-	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition);
-}
 
 // View mode: 0 = perspective (default), 1 = top view, 2 = side view, 3 = front view
 int viewMode = 0;
 
 // Function to set up the camera
+void applyCameraShake(float& camX, float& camY, float intensity) {
+	camX += ((rand() % 21 - 10) / 10.0f) * intensity; // Add random shake to cameraX
+	camY += ((rand() % 21 - 10) / 10.0f) * intensity; // Add random shake to cameraY
+}
+
 void setCamera() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -281,31 +353,40 @@ void setCamera() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
+	// Apply shake effect if needed
+	float shakeX = cameraX;
+	float shakeY = cameraY;
+	if (needShake) {
+		float shakeIntensity = 0.2f; // Adjust the shake intensity
+		applyCameraShake(shakeX, shakeY, shakeIntensity);
+	}
+
 	// Calculate the angle to the camera for first-person view
-	float deltaX = cameraX - carPosX;
+	float deltaX = shakeX - carPosX;
 	float deltaZ = cameraZ - carPosZ;
 	float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / M_PI; // Convert to degrees
 
 	switch (viewMode) {
-		{ case 0: // Third-person view (behind the car) 
-			gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 15.0f, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
-		}
+	case 0: // Third-person view (behind the car)
+		gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 15.0f, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
 		break;
-	case 1: // Top view (above the car, looking down) 
-		gluLookAt(carPosX, carPosY + 30.0f, carPosZ, carPosX, carPosY, carPosZ, 0.0, 0.0, -1.0);  
+	case 1: // Top view (above the car, looking down)
+		gluLookAt(carPosX, carPosY + 30.0f, carPosZ, carPosX, carPosY, carPosZ, 0.0, 0.0, -1.0);
 		break;
-	case 2: // Side view (beside the car) 
-		gluLookAt(carPosX + 30.0f, carPosY + 7.0f, carPosZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector 
-	break; 
-	case 3: // Front view (in front of the car) 
-		gluLookAt(carPosX, carPosY + 7.0f, carPosZ - 30.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector
+	case 2: // Side view (beside the car)
+		gluLookAt(carPosX + 30.0f + shakeX, carPosY + 7.0f + shakeY, carPosZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector
+		break;
+	case 3: // Front view (in front of the car)
+		gluLookAt(carPosX, carPosY + 7.0f + shakeY, carPosZ - 30.0f + shakeX, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector
 		break;
 	case 4: // First-person view
-		gluLookAt(carPosX, carPosY + 8.5f, carPosZ, // Camera at car position
+		gluLookAt(carPosX, carPosY + 8.5f + shakeY, carPosZ, // Camera at car position
 			carPosX - sin(angleToCamera * M_PI / 180.0f), carPosY + 8.0f, carPosZ + cos(angleToCamera * M_PI / 180.0f), // Looking in the opposite direction of the car
 			0.0, 1.0, 0.0); // Up vector
 		break;
 	}
+
+	needShake = false; // Reset the shake flag
 }
 
 
@@ -317,35 +398,35 @@ void specialKeyboard(int key, int x, int y) {
 		else {
 			moveSpeed = normalSpeed;
 		}
-		if (mudSlowDownActive) { 
-			moveSpeed = 0.2f; 
+		if (mudSlowDownActive) {
+			moveSpeed = 0.2f;
 		}
 		else if (speedBoostActive) { // Check if speed boost is active 
-			moveSpeed = boostedSpeed; 
+			moveSpeed = boostedSpeed;
 		}
 
 		switch (key) {
-		case GLUT_KEY_DOWN:    // Up arrow key
+		case GLUT_KEY_DOWN:    // Down arrow key
 			carPosZ -= moveSpeed; // Move car forward along the Z-axis
 			if (carPosZ >= 1500) {
 				gameWin = true;
 			}
+			needShake = false;
 			break;
-		case GLUT_KEY_UP:  // Down arrow key
-			carPosZ += moveSpeed;
+		case GLUT_KEY_UP:  // Up arrow key
+			carPosZ += moveSpeed; // Move car backward along the Z-axis
 			if (carPosZ >= 1500) {
 				gameWin = true;
-			} // Move car backward along the Z-axis
+			}
+			needShake = false;
 			break;
-		case GLUT_KEY_RIGHT:  // Left arrow key
+		case GLUT_KEY_RIGHT:  // Right arrow key
 			carPosX -= moveSpeed; // Move car left along the X-axis
-			cameraX += (rand() % 5 - 2) * 0.1f;
-			cameraY += (rand() % 5 - 2) * 0.1f;
+			needShake = true; // Enable shake for left movement
 			break;
-		case GLUT_KEY_LEFT: // Right arrow key
+		case GLUT_KEY_LEFT: // Left arrow key
 			carPosX += moveSpeed; // Move car right along the X-axis
-			cameraX += (rand() % 5 - 2) * 0.1f;
-			cameraY += (rand() % 5 - 2) * 0.1f;
+			needShake = true; // Enable shake for right movement
 			break;
 		}
 	}
@@ -355,6 +436,8 @@ void specialKeyboard(int key, int x, int y) {
 	setCamera(); // Update the camera to follow the car
 	glutPostRedisplay(); // Request display update after movement
 }
+
+
 
 
 
@@ -368,25 +451,38 @@ void setupOrthoProjection(int windowWidth, int windowHeight) {
 
 
 // Initialization function
-void init() {
 
-	glEnable(GL_DEPTH_TEST);
 
-	// Set up lighting (optional)
-	GLfloat ambient[] = { 0.7f, 0.7f, 0.7f, 1.0f };
-	GLfloat diffuse[] = { 0.8f, 0.8f, 0.8f, 1.0f };
-	GLfloat lightPosition[] = { -7.0f, 10.0f, 10.0f, 0.0f };
-	glLightfv(GL_LIGHT0, GL_AMBIENT, ambient);
-	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuse);
-	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+void initLighting() {
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
-	initialCarPosZ = carPosZ;
 
-	glEnable(GL_BLEND); 
-	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	GLfloat ambientLight[] = { 0.2f, 0.2f, 0.2f, 1.0f };
+	GLfloat diffuseLight[] = { 0.8f, 0.8f, 0.8f, 1.0f };
+	GLfloat specularLight[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat position[] = { 0.0f, 10.0f, 0.0f, 1.0f };
 
+	glLightfv(GL_LIGHT0, GL_AMBIENT, ambientLight);
+	glLightfv(GL_LIGHT0, GL_DIFFUSE, diffuseLight);
+	glLightfv(GL_LIGHT0, GL_SPECULAR, specularLight);
+	glLightfv(GL_LIGHT0, GL_POSITION, position);
 }
+
+void myInit1() {
+	glEnable(GL_DEPTH_TEST);
+	initLighting();
+
+	GLfloat ambientMaterial[] = { 0.1f, 0.1f, 0.1f, 1.0f };
+	GLfloat diffuseMaterial[] = { 0.5f, 0.5f, 0.5f, 1.0f };
+	GLfloat specularMaterial[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+	GLfloat shininess[] = { 50.0f };
+
+	glMaterialfv(GL_FRONT, GL_AMBIENT, ambientMaterial);
+	glMaterialfv(GL_FRONT, GL_DIFFUSE, diffuseMaterial);
+	glMaterialfv(GL_FRONT, GL_SPECULAR, specularMaterial);
+	glMaterialfv(GL_FRONT, GL_SHININESS, shininess);
+}
+
 
 
 int WIDTH = 1280;
@@ -425,21 +521,7 @@ Vector Up(0, 1, 0);
 
 int cameraZoom = 0;
 
-// Model Variables
-Model_3DS model_house;
-Model_3DS model_tree;
-Model_3DS model_coin;
-Model_3DS model_gem;
-Model_3DS model_flag;
-Model_3DS model_taxi;
-Model_3DS model_mcqueen;
-Model_3DS model_policecar;
-Model_3DS model_mud;
-Model_3DS model_finish;
-// Textures
-GLTexture tex_ground;
-GLTexture tex_coin;
-GLTexture tex_flag;  // Add this line
+
 
 
 //bool speedBoostActive = false; // Flag to indicate if the speed boost is active
@@ -513,38 +595,7 @@ void InitMaterial()
 }
 
 
-void myInit(void)
-{
-	glClearColor(0.0, 0.0, 0.0, 0.0);
-
-	glMatrixMode(GL_PROJECTION);
-
-	glLoadIdentity();
-
-	gluPerspective(fovy, aspectRatio, zNear, zFar);
-	//*//
-	// fovy:			Angle between the bottom and top of the projectors, in degrees.			 //
-	// aspectRatio:		Ratio of width to height of the clipping plane.							 //
-	// zNear and zFar:	Specify the front and back clipping planes distances from camera.		 //
-	//*//
-
-	glMatrixMode(GL_MODELVIEW);
-
-	glLoadIdentity();
-
-	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
-	//*//
-	// EYE (ex, ey, ez): defines the location of the camera.									 //
-	// AT (ax, ay, az):	 denotes the direction where the camera is aiming at.					 //
-	// UP (ux, uy, uz):  denotes the upward orientation of the camera.							 //
-	//*//
-
-	InitLightSource();
-	InitCarLights();
-
-
-	InitMaterial();
-
+void init() {
 	glEnable(GL_DEPTH_TEST);
 
 	// Set up lighting (optional)
@@ -556,7 +607,30 @@ void myInit(void)
 	glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
+	initialCarPosZ = carPosZ;
+
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Initialize car lights
+	InitCarLights();
 }
+
+void myInit(void) {
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glMatrixMode(GL_PROJECTION);
+	glLoadIdentity();
+	gluPerspective(fovy, aspectRatio, zNear, zFar);
+	glMatrixMode(GL_MODELVIEW);
+	glLoadIdentity();
+	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
+
+	InitLightSource();
+	InitCarLights();
+	InitMaterial();
+	glEnable(GL_DEPTH_TEST);
+}
+
 
 void RenderGround()
 {
@@ -569,7 +643,7 @@ void RenderGround()
 	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]);	// Bind the ground texture
 
 	// Set a large rectangle to simulate an infinite ground
-	float groundSize =5000.0f;  // Large ground size for the visible area
+	float groundSize = 600.0f;  // Large ground size for the visible area
 	float textureRepeat = 100.0f; // Texture repetition factor
 
 	glPushMatrix();
@@ -588,6 +662,39 @@ void RenderGround()
 	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
 
 	glColor3f(1, 1, 1); // Reset material color to white
+}
+void RenderGround2()
+{
+	glDisable(GL_LIGHTING);	// Disable lighting 
+
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+
+	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+
+	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]);	// Bind the ground texture
+
+	// Set a large rectangle to simulate an infinite ground
+	float groundSize = 600.0f;  // Large ground size for the visible area
+	float textureRepeat = 500.0f; // Texture repetition factor
+	float translationZ = 600.0f; // Translation for the second ground segment
+
+	glPushMatrix();
+	glTranslatef(0.0f, 0.0f, translationZ); // Translate the ground along the z-axis
+
+	glBegin(GL_QUADS);
+	glNormal3f(0, 1, 0); // Normal pointing upwards
+	// Adjust the vertex positions to start from z = 600
+	glTexCoord2f(0, 0); glVertex3f(-groundSize, 0, 600 - groundSize); // Bottom-left
+	glTexCoord2f(textureRepeat, 0); glVertex3f(groundSize, 0, 600 - groundSize); // Bottom-right
+	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(groundSize, 0, 600 + groundSize); // Top-right
+	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize, 0, 600 + groundSize); // Top-left
+
+	glEnd();
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
+
+	glColor3f(1, 1, 1); // Reset material color to white
 }
 
 
@@ -654,7 +761,6 @@ void checkCollisions() {
 	if (gameOver) return;
 
 	float collisionRadius = 7.0f;
-	float bounceDistance = 10.0f;
 
 	// Check collisions with taxis
 	for (int i = 0; i < numTaxis; ++i) {
@@ -662,14 +768,8 @@ void checkCollisions() {
 			if (lives > 0) {
 				playCollisionSound();
 				lives--;
-				float deltaX = carPosX - taxiPositions[i][0]; 
-				float deltaZ = carPosZ - taxiPositions[i][2]; 
-				float length = sqrt(deltaX * deltaX + deltaZ * deltaZ); // Normalize the direction and apply the bounce 
-				deltaX /= length; 
-				deltaZ /= length; 
-				carPosX += deltaX * bounceDistance; 
-				carPosZ += deltaZ * bounceDistance;
-				taxis[i].fading = true;
+				// Move the taxi out of view
+				taxiPositions[i][0] = 100000; // Move the taxi out of view
 				if (lives == 0) {
 					gameOver = true;
 				}
@@ -683,14 +783,8 @@ void checkCollisions() {
 			if (lives > 0) {
 				playCollisionSound();
 				lives--;
-				float deltaX = carPosX - taxiPositions[i][0];
-				float deltaZ = carPosZ - taxiPositions[i][2];
-				float length = sqrt(deltaX * deltaX + deltaZ * deltaZ); // Normalize the direction and apply the bounce 
-				deltaX /= length;
-				deltaZ /= length;
-				carPosX += deltaX * bounceDistance;
-				carPosZ += deltaZ * bounceDistance;
-				policeCars[i].fading = true;
+				// Move the police car out of view
+				policeCarPositions[i][0] = 100000; // Move the police car out of view
 				if (lives == 0) {
 					gameOver = true;
 				}
@@ -700,6 +794,23 @@ void checkCollisions() {
 }
 
 
+//void RenderSkyBox() {
+//	glDisable(GL_LIGHTING);  // Disable lighting for the skybox
+//	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
+//	glBindTexture(GL_TEXTURE_2D, tex_sky); // Bind the skybox texture
+//
+//	glPushMatrix();
+//	glTranslated(carPosX, carPosY, carPosZ); // Center the skybox on the car
+//	GLUquadricObj* qobj = gluNewQuadric();
+//	gluQuadricTexture(qobj, true);
+//	gluQuadricNormals(qobj, GL_SMOOTH);
+//	gluSphere(qobj, 1000.0, 100, 100); // Large enough to encompass the scene
+//	gluDeleteQuadric(qobj);
+//	glPopMatrix();
+//
+//	glDisable(GL_TEXTURE_2D);
+//	glEnable(GL_LIGHTING);  // Re-enable lighting for other objects
+//}
 void setGoldMaterial() {
 	// Gold material properties
 	GLfloat gold_ambient[] = { 0.24725f, 0.1995f, 0.0745f, 1.0f };
@@ -730,6 +841,12 @@ void initCars() {
 		policeCars[i].fading = false;
 	}
 }
+
+void UpdateCarLights() {
+	GLfloat lightPosition[] = { carPosX, 1.0f, carPosZ, 1.0f }; // Slightly above the car
+	glLightfv(GL_LIGHT1, GL_POSITION, lightPosition);
+}
+
 
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -775,14 +892,17 @@ void myDisplay(void) {
 
 		// Draw Ground
 		RenderGround();
+		RenderGround2();
 
 		timeElapsed += timeSpeed;
 		float currentIntensity = sunIntensity + intensityVariation * sin(timeElapsed);
 
-		GLfloat lightIntensity[] = { currentIntensity, currentIntensity, currentIntensity, 1.0f };
+		GLfloat lightIntensity[] = { currentLightIntensity, currentLightIntensity, currentLightIntensity, 1.0f };
 		GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
 		glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
 		glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, lightIntensity);
+		glLightfv(GL_LIGHT0, GL_SPECULAR, lightIntensity);
 
 		// Draw car model
 		float deltaX = cameraX - carPosX;
@@ -795,15 +915,24 @@ void myDisplay(void) {
 		glRotatef(angleToCamera + modelOffset, 0.0f, 1.0f, 0.0f);  // Rotate the car to face the camera
 		glScalef(3.0, 3.0, 3.0);  // Scale the car uniformly to make it bigger
 		model_mcqueen.Draw();      // Draw the car
+		drawHeadlights();
 		glPopMatrix();
 
 		// Draw coin model
+		//for (int i = 0; i < numCoins; ++i) {
+		//	glPushMatrix();
+		//	//glScalef(0.2, 0.2, 0.2);
+		//	glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]);
+		//	glScalef(0.2, 0.2, 0.2);
+		//	model_coin.Draw(); // Draw the coin
+		//	glPopMatrix();
+		//}
 		for (int i = 0; i < numCoins; ++i) {
 			glPushMatrix();
-			//glScalef(0.2, 0.2, 0.2);
 			glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]);
+			glRotatef(coinRotationAngle, 0.0f, 1.0f, 0.0f);  // Rotate around Y axis
 			glScalef(0.2, 0.2, 0.2);
-			model_coin.Draw(); // Draw the coin
+			model_coin.Draw();
 			glPopMatrix();
 		}
 
@@ -880,8 +1009,8 @@ void myDisplay(void) {
 		//glScalef(0.9, 0.9, 0.9);  // Scale the car uniformly to make it bigger
 		//model_mud.Draw();
 		//glPopMatrix();
-		 
-		
+
+
 
 
 		// Set up orthographic projection for text rendering
@@ -930,7 +1059,7 @@ void myDisplay(void) {
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
 		glMatrixMode(GL_MODELVIEW);
-		
+
 		UpdateCarLights();
 		checkCoinCollisions(); // Check for coin collisions
 		checkGemCollisions();
@@ -1059,7 +1188,7 @@ void myMouse(int button, int state, int x, int y)
 	}
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		if (!isJumping && carPosY == initialY) {
-			isJumping = true; 
+			isJumping = true;
 			jumpProgress = 0.0f; // Reset jump progress 
 		}
 	}
@@ -1181,6 +1310,10 @@ void main(int argc, char** argv)
 	glutReshapeFunc(myReshape);
 
 	myInit();
+	myInit1();
+	init();
+	InitCarLights();
+	InitLightSource();
 
 	LoadAssets();
 	glEnable(GL_DEPTH_TEST);
@@ -1231,5 +1364,5 @@ void main(int argc, char** argv)
 //display score increase by one every two seconds ####################################
 //timer  1 min ##########################################
 // game over #######################################
-// environment 2 new obsistecale slow dowm for 10 sec and new collectable  
+// environment 2 new obsistecale slow dowm for 10 sec and new collectable  
 //
