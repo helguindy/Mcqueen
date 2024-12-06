@@ -386,14 +386,12 @@ Model_3DS model_flag;
 Model_3DS model_taxi;
 Model_3DS model_mcqueen;
 Model_3DS model_policecar;
-Model_3DS model_sky; // Add this with other model declarations
 Model_3DS model_mud;
 // Textures
 GLTexture tex_ground;
 GLTexture tex_coin;
 GLTexture tex_flag;  // Add this line
 
-//GLTexture tex_sky;
 
 //bool speedBoostActive = false; // Flag to indicate if the speed boost is active
 //float speedBoostTimer = 0.0f;  // Timer for the speed boost duration
@@ -651,23 +649,7 @@ void checkCollisions() {
 	}
 }
 
-//void RenderSkyBox() {
-//	glDisable(GL_LIGHTING);  // Disable lighting for the skybox
-//	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
-//	glBindTexture(GL_TEXTURE_2D, tex_sky); // Bind the skybox texture
-//
-//	glPushMatrix();
-//	glTranslated(carPosX, carPosY, carPosZ); // Center the skybox on the car
-//	GLUquadricObj* qobj = gluNewQuadric();
-//	gluQuadricTexture(qobj, true);
-//	gluQuadricNormals(qobj, GL_SMOOTH);
-//	gluSphere(qobj, 1000.0, 100, 100); // Large enough to encompass the scene
-//	gluDeleteQuadric(qobj);
-//	glPopMatrix();
-//
-//	glDisable(GL_TEXTURE_2D);
-//	glEnable(GL_LIGHTING);  // Re-enable lighting for other objects
-//}
+
 void setGoldMaterial() {
 	// Gold material properties
 	GLfloat gold_ambient[] = { 0.24725f, 0.1995f, 0.0745f, 1.0f };
@@ -835,6 +817,9 @@ void myDisplay(void) {
 		model_mud.Draw();
 		glPopMatrix();
 		 
+		
+
+
 		// Set up orthographic projection for text rendering
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
@@ -1059,7 +1044,7 @@ void LoadAssets()
 	tex_flag.Load("Textures/chharacter_flag.bmp");
 
 
-	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
+	//loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
 
 void main(int argc, char** argv)
