@@ -1044,19 +1044,20 @@ void myReshape(int w, int h)
 void LoadAssets()
 {
 	// Loading Model files
-	model_house.Load("Models/car/car.3DS");
+	//model_house.Load("Models/car/car.3DS");
 	model_tree.Load("Models/tree/Tree1.3ds");
 	model_coin.Load("Models/coin3.3ds");
 	model_flag.Load("Models/flagg.3ds");
 	model_taxi.Load("Models/taxi.3ds");
-	model_mcqueen.Load("Models/mcqueen.3DS");
+	model_mcqueen.Load("Models/redcar/redcar.3DS");
 	model_policecar.Load("Models/police.3ds");
 	model_gem.Load("Models/diamond.3ds");//zbtet
 	model_mud.Load("Models/mud.3ds");
 	// Loading texture files
 	tex_coin.Load("Textures/coin.bmp");
 	tex_ground.Load("Textures/ground.bmp");
-	tex_flag.Load("Textures/character_flag.bmp");
+	tex_flag.Load("Textures/chharacter_flag.bmp");
+
 
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
