@@ -502,6 +502,7 @@ void renderGameOverScreen() {
 
 	glFlush(); // Ensure everything is drawn
 }
+
 void renderLives() {
 	glDisable(GL_LIGHTING);
 	glDisable(GL_DEPTH_TEST);
@@ -542,7 +543,6 @@ void renderLives() {
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_LIGHTING);
 }
-
 
 // Add these global variables at the top
 float distance(float x1, float z1, float x2, float z2) {
@@ -628,6 +628,7 @@ void setGoldMaterial() {
 	glMaterialfv(GL_FRONT, GL_SPECULAR, gold_specular);
 	glMaterialfv(GL_FRONT, GL_SHININESS, gold_shininess);
 }
+
 void initCars() {
 	for (int i = 0; i < numTaxis; ++i) {
 		taxis[i].x = taxiPositions[i][0];
@@ -645,7 +646,6 @@ void initCars() {
 		policeCars[i].fading = false;
 	}
 }
-
 
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -860,11 +860,6 @@ void myDisplay(void) {
 	glutSwapBuffers();
 }
 
-
-
-
-
-
 void keyboard(unsigned char key, int x, int y) {
 	const float moveStep = 1.0f;
 
@@ -912,7 +907,6 @@ void myMotion(int x, int y)
 	glutPostRedisplay();	//Re-draw scene 
 }
 
-
 void myMouse(int button, int state, int x, int y)
 {
 	y = HEIGHT - y;  // Adjust y for proper orientation
@@ -930,7 +924,6 @@ void myMouse(int button, int state, int x, int y)
 		}
 	}
 }
-
 
 
 void myReshape(int w, int h)
@@ -977,7 +970,7 @@ void LoadAssets()
 
 void main(int argc, char** argv)
 {
-
+	//playBackgroundMusic();
 	glutInit(&argc, argv);
 
 	glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
@@ -989,7 +982,7 @@ void main(int argc, char** argv)
 	generateCarPositions(); // Generate initial car positions
 
 	glutCreateWindow(title);
-	playBackgroundMusic();
+
 	glutDisplayFunc(myDisplay);
 	glutTimerFunc(1000, update, 0); // Start the update loop
 
