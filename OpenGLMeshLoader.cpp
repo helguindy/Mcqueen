@@ -40,7 +40,7 @@ bool gameOver = false; // Flag to track game over state
 bool timeOver = false;
 //float moveSpeed = 1.1f;
 float normalSpeed = 1.0f; // Normal speed of the car
-float increasedSpeed = 2.2f; // Increased speed after Z = 600
+float increasedSpeed = 1.7f; // Increased speed after Z = 600
 float moveSpeed = normalSpeed; // Initial move speed
 const int numCoins = 10; // Number of coins
 float coinPositions[numCoins][3]; // Array to store coin positions (X, Y, Z)
@@ -52,6 +52,12 @@ int score = 0; // Initial score
 bool scoreDoubled = false; // Flag to indicate if the score has been doubled
 bool gameWin = false; // Flag to track game win state
 float jumpProgress = 0.0f; // Progress of the jump (0 to 1)
+bool speedBoostActive = false; // Flag to indicate if the speed boost is active
+float speedBoostTimer = 0.0f;  // Timer for the speed boost duration
+float boostDuration = 5.0f;    // Duration of the speed boost in seconds
+float boostedSpeed = 10.2f; // Increased speed after Z = 600
+
+
 
 struct Car {
 	float x, y, z;
@@ -145,7 +151,7 @@ void generateCarPositions() {
 }
 
 void checkCoinCollisions() {
-	float coinCollisionRadius = 6.0f; // Adjust as needed for collision detection
+	float coinCollisionRadius = 10.0f; // Adjust as needed for collision detection
 
 	for (int i = 0; i < numCoins; ++i) {
 		float dx = carPosX - coinPositions[i][0];
@@ -161,12 +167,33 @@ void checkCoinCollisions() {
 	}
 }
 
+const int numGems = 5; // Number of gems
+float gemPositions[numGems][3]; // Array to store gem positions (X, Y, Z)
+
+void generateGemPositions() {
+	for (int i = 0; i < numGems; ++i) {
+		gemPositions[i][0] = static_cast<float>(rand() % 41 - 20); // X: -20 to 20
+		gemPositions[i][1] = 1.0f;                                 // Y: 1.0f to be visible above ground
+		gemPositions[i][2] = static_cast<float>(rand() % 901 + 600); // Z: 600 to 1500
+	}
+}
+
+
 
 // Update function to decrement timer and increment score
 void update(int value) {
 	if (timer > 0) {
 		timer--; // Decrement the timer
 		score++; // Increment the score for demonstration
+
+		// Handle speed boost duration
+		if (speedBoostActive) {
+			speedBoostTimer -= 1.0f;
+			if (speedBoostTimer <= 0) {
+				speedBoostActive = false;
+				moveSpeed = normalSpeed; // Reset speed to normal
+			}
+		}
 	}
 	else {
 		timeOver = true;
@@ -175,6 +202,7 @@ void update(int value) {
 	glutPostRedisplay(); // Redraw the screen
 	glutTimerFunc(1000, update, 0); // Call this function every second
 }
+
 
 void InitCarLights() {
 	// Enable Light Source 1
@@ -367,6 +395,28 @@ GLTexture tex_flag;  // Add this line
 
 //GLTexture tex_sky;
 
+//bool speedBoostActive = false; // Flag to indicate if the speed boost is active
+//float speedBoostTimer = 0.0f;  // Timer for the speed boost duration
+//float boostDuration = 5.0f;    // Duration of the speed boost in seconds
+
+void checkGemCollisions() {
+	float gemCollisionRadius = 5.0f; // Adjust as needed for collision detection
+
+	for (int i = 0; i < numGems; ++i) {
+		float dx = carPosX - gemPositions[i][0];
+		float dz = carPosZ - gemPositions[i][2];
+
+		if (dx * dx + dz * dz < gemCollisionRadius * gemCollisionRadius) {
+			// Collision with a gem detected
+			moveSpeed = boostedSpeed; // Apply speed boost
+			speedBoostActive = true;    // Activate speed boost
+			speedBoostTimer = boostDuration; // Reset the boost timer
+
+			// Remove the gem or mark it as collected
+			gemPositions[i][0] = 100000; // Move the gem out of view
+		}
+	}
+}
 
 
 void InitLightSource()
@@ -718,8 +768,9 @@ void myDisplay(void) {
 		// Draw coin model
 		for (int i = 0; i < numCoins; ++i) {
 			glPushMatrix();
-			glScalef(0.2, 0.2, 0.2);
+			//glScalef(0.2, 0.2, 0.2);
 			glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]);
+			glScalef(0.2, 0.2, 0.2);
 			model_coin.Draw(); // Draw the coin
 			glPopMatrix();
 		}
@@ -741,6 +792,18 @@ void myDisplay(void) {
 			model_policecar.Draw();
 			glPopMatrix();
 		}
+
+		for (int i = 0; i < numGems; ++i) {
+			glPushMatrix();
+			glTranslatef(gemPositions[i][0], gemPositions[i][1], gemPositions[i][2]);
+			glScalef(0.8, 0.8, 0.8); // Scale the gem appropriately
+			model_gem.Draw(); // Draw the gem
+			glPopMatrix();
+		}
+
+
+
+
 
 		// Draw flag model
 		glPushMatrix();
@@ -784,10 +847,10 @@ void myDisplay(void) {
 		// Render the environment text at the top
 		glDisable(GL_LIGHTING);
 		if (carPosZ < 600) {
-			renderText(30, 550, "Environment 1", 0.3f); // Adjust position if necessary
+			renderText(30, 550, "easy mode", 0.3f); // Adjust position if necessary
 		}
 		else {
-			renderText(30, 550, "Environment 2", 0.3f); // Adjust position if necessary
+			renderText(30, 550, "hard mode", 0.3f); // Adjust position if necessary
 		}
 		glEnable(GL_LIGHTING);
 
@@ -821,6 +884,7 @@ void myDisplay(void) {
 		
 		UpdateCarLights();
 		checkCoinCollisions(); // Check for coin collisions
+		checkGemCollisions();
 	}
 
 	if (gameOver) {
@@ -1009,6 +1073,7 @@ void main(int argc, char** argv)
 	glutInitWindowPosition(100, 150);
 	generateCoinPositions(); // Generate initial coin positions
 	generateCarPositions(); // Generate initial car positions
+	generateGemPositions();
 
 	glutCreateWindow(title);
 
