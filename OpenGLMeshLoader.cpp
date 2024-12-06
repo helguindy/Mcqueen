@@ -79,6 +79,7 @@ Model_3DS model_mcqueen;
 Model_3DS model_policecar;
 Model_3DS model_sky; // Add this with other model declarations
 Model_3DS model_mud;
+Model_3DS model_finish;
 // Textures
 GLTexture tex_ground;
 GLTexture tex_coin;
@@ -235,33 +236,33 @@ void drawCircle(float cx, float cy, float r, int num_segments) {
 }
 
 void drawHeadlights() {
-    float headlightXOffset = 0.5f;
-    float headlightYOffset = 0.5f;
-    float headlightZOffset = 2.5f; // Adjust to the front of the car
+	float headlightXOffset = 0.5f;
+	float headlightYOffset = 0.5f;
+	float headlightZOffset = 2.5f; // Adjust to the front of the car
 
-    // Set emission property for headlights to ensure they are always bright
-    GLfloat emission[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // Bright white
-    glMaterialfv(GL_FRONT, GL_EMISSION, emission);
+	// Set emission property for headlights to ensure they are always bright
+	GLfloat emission[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // Bright white
+	glMaterialfv(GL_FRONT, GL_EMISSION, emission);
 
-    // Draw left headlight using gem model
-    glPushMatrix();
-    glTranslatef(headlightXOffset, headlightYOffset, headlightZOffset);
-    glRotatef(90.0f, 1.0f, 0.0f, 0.0f); // Rotate gem 90 degrees around the Z-axis
-    glScalef(0.7, 0.7, 0.7); // Scale down the gem to fit as a headlight
-    model_gem.Draw(); // Draw the gem model as the headlight
-    glPopMatrix();
+	// Draw left headlight using gem model
+	glPushMatrix();
+	glTranslatef(headlightXOffset, headlightYOffset, headlightZOffset);
+	glRotatef(90.0f, 1.0f, 0.0f, 0.0f); // Rotate gem 90 degrees around the Z-axis
+	glScalef(0.7, 0.7, 0.7); // Scale down the gem to fit as a headlight
+	model_gem.Draw(); // Draw the gem model as the headlight
+	glPopMatrix();
 
-    // Draw right headlight using gem model
-    glPushMatrix();
-    glTranslatef(-headlightXOffset, headlightYOffset, headlightZOffset);
-    glRotatef(90.0f, 1.0f, 0.0f, 0.0f); // Rotate gem 90 degrees around the Z-axis
-    glScalef(0.7, 0.7, 0.7); // Scale down the gem to fit as a headlight
-    model_gem.Draw(); // Draw the gem model as the headlight
-    glPopMatrix();
+	// Draw right headlight using gem model
+	glPushMatrix();
+	glTranslatef(-headlightXOffset, headlightYOffset, headlightZOffset);
+	glRotatef(90.0f, 1.0f, 0.0f, 0.0f); // Rotate gem 90 degrees around the Z-axis
+	glScalef(0.7, 0.7, 0.7); // Scale down the gem to fit as a headlight
+	model_gem.Draw(); // Draw the gem model as the headlight
+	glPopMatrix();
 
-    // Reset emission to zero
-    GLfloat noEmission[] = { 0.0f, 0.0f, 0.0f, 1.0f };
-    glMaterialfv(GL_FRONT, GL_EMISSION, noEmission);
+	// Reset emission to zero
+	GLfloat noEmission[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+	glMaterialfv(GL_FRONT, GL_EMISSION, noEmission);
 }
 
 
@@ -281,9 +282,9 @@ void generateGemPositions() {
 void update(int value) {
 	if (timer > 0) {
 		timer--; // Decrement the timer
-		score++; 
+		score++;
 		float timeFraction = 1.0f - static_cast<float>(timer) / 60.0f; // Assuming timer starts at 60 
-		currentLightIntensity = startLightIntensity * (1.0f - timeFraction) + endLightIntensity * timeFraction; 
+		currentLightIntensity = startLightIntensity * (1.0f - timeFraction) + endLightIntensity * timeFraction;
 		headlightCurrentIntensity = headlightStartIntensity * (1.0f - timeFraction) + headlightEndIntensity * timeFraction;
 
 		// Handle speed boost duration
@@ -295,7 +296,7 @@ void update(int value) {
 				moveSpeed = normalSpeed; // Reset speed to normal after boost ends
 				std::cout << "Speed boost ended. Back to normal speed.\n"; // Debug print
 			}
-			
+
 		}
 	}
 	else {
@@ -334,8 +335,9 @@ int viewMode = 0;
 
 // Function to set up the camera
 void applyCameraShake(float& camX, float& camY, float intensity) {
-	camX += ((rand() % 21 - 10) / 10.0f) * intensity; // Add random shake to cameraX
-	camY += ((rand() % 21 - 10) / 10.0f) * intensity; // Add random shake to cameraY
+	camX += ((rand() % 21 - 10) / 10.0f) * intensity;
+	camY += ((rand() % 21 - 10) / 10.0f) * intensity;
+	std::cout << "Camera shake applied: (" << camX << ", " << camY << ")" << std::endl;
 }
 
 void setCamera() {
@@ -346,42 +348,32 @@ void setCamera() {
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 
-	// Apply shake effect if needed
-	float shakeX = cameraX;
-	float shakeY = cameraY;
-	if (needShake) {
-		float shakeIntensity = 0.2f; // Adjust the shake intensity
-		applyCameraShake(shakeX, shakeY, shakeIntensity);
-	}
-
 	// Calculate the angle to the camera for first-person view
-	float deltaX = shakeX - carPosX;
+	float deltaX = cameraX - carPosX;
 	float deltaZ = cameraZ - carPosZ;
 	float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / M_PI; // Convert to degrees
 
 	switch (viewMode) {
-	case 0: // Third-person view (behind the car)
-		gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 15.0f, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
-		break;
-	case 1: // Top view (above the car, looking down)
+		{ case 0: // Third-person view (behind the car) 
+			gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 7.0f, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
+		}
+				break;
+	case 1: // Top view (above the car, looking down) 
 		gluLookAt(carPosX, carPosY + 30.0f, carPosZ, carPosX, carPosY, carPosZ, 0.0, 0.0, -1.0);
 		break;
-	case 2: // Side view (beside the car)
-		gluLookAt(carPosX + 30.0f + shakeX, carPosY + 7.0f + shakeY, carPosZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector
+	case 2: // Side view (beside the car) 
+		gluLookAt(carPosX + 30.0f, carPosY + 7.0f, carPosZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector 
 		break;
-	case 3: // Front view (in front of the car)
-		gluLookAt(carPosX, carPosY + 7.0f + shakeY, carPosZ - 30.0f + shakeX, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector
+	case 3: // Front view (in front of the car) 
+		gluLookAt(carPosX, carPosY + 7.0f, carPosZ - 30.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector
 		break;
 	case 4: // First-person view
-		gluLookAt(carPosX, carPosY + 8.5f + shakeY, carPosZ, // Camera at car position
-			carPosX - sin(angleToCamera * M_PI / 180.0f), carPosY + 8.0f, carPosZ + cos(angleToCamera * M_PI / 180.0f), // Looking in the opposite direction of the car
+		gluLookAt(carPosX, carPosY + 6.5f, carPosZ, // Camera at car position
+			carPosX - sin(angleToCamera * M_PI / 180.0f), carPosY + 6.5f, carPosZ + cos(angleToCamera * M_PI / 180.0f), // Looking in the opposite direction of the car
 			0.0, 1.0, 0.0); // Up vector
 		break;
 	}
-
-	needShake = false; // Reset the shake flag
 }
-
 
 
 
@@ -419,12 +411,12 @@ void specialKeyboard(int key, int x, int y) {
 		case GLUT_KEY_RIGHT:  // Right arrow key
 			needShake = true;
 			carPosX -= moveSpeed; // Move car left along the X-axis
-			 // Enable shake for left movement
+			// Enable shake for left movement
 			break;
 		case GLUT_KEY_LEFT: // Left arrow key
 			needShake = true;
 			carPosX += moveSpeed; // Move car right along the X-axis
-			 // Enable shake for right movement
+			// Enable shake for right movement
 			break;
 		}
 	}
@@ -640,7 +632,7 @@ void RenderGround()
 	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]);	// Bind the ground texture
 
 	// Set a large rectangle to simulate an infinite ground
-	float groundSize =5000.0f;  // Large ground size for the visible area
+	float groundSize = 5000.0f;  // Large ground size for the visible area
 	float textureRepeat = 500.0f; // Texture repetition factor
 
 	glPushMatrix();
@@ -862,9 +854,9 @@ void myDisplay(void) {
 
 		GLfloat lightIntensity[] = { currentLightIntensity, currentLightIntensity, currentLightIntensity, 1.0f };
 		GLfloat lightPosition[] = { 0.0f, 100.0f, 0.0f, 0.0f };
-		glLightfv(GL_LIGHT0, GL_POSITION, lightPosition); 
-		glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity); 
-		glLightfv(GL_LIGHT0, GL_DIFFUSE, lightIntensity); 
+		glLightfv(GL_LIGHT0, GL_POSITION, lightPosition);
+		glLightfv(GL_LIGHT0, GL_AMBIENT, lightIntensity);
+		glLightfv(GL_LIGHT0, GL_DIFFUSE, lightIntensity);
 		glLightfv(GL_LIGHT0, GL_SPECULAR, lightIntensity);
 
 		// Draw car model
@@ -955,7 +947,7 @@ void myDisplay(void) {
 		//glScalef(0.9, 0.9, 0.9);  // Scale the car uniformly to make it bigger
 		//model_mud.Draw();
 		//glPopMatrix();
-		 
+
 		// Set up orthographic projection for text rendering
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
@@ -1002,7 +994,7 @@ void myDisplay(void) {
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
 		glMatrixMode(GL_MODELVIEW);
-		
+
 		UpdateCarLights();
 		checkCoinCollisions(); // Check for coin collisions
 		checkGemCollisions();
@@ -1131,7 +1123,7 @@ void myMouse(int button, int state, int x, int y)
 	}
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
 		if (!isJumping && carPosY == initialY) {
-			isJumping = true; 
+			isJumping = true;
 			jumpProgress = 0.0f; // Reset jump progress 
 		}
 	}
@@ -1161,7 +1153,43 @@ void myReshape(int w, int h)
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
 }
 
+void DrawFlag() {
+	glPushMatrix();
 
+	// Enable texturing
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tex_flag.texture[0]);
+
+	// Enable blending for transparency if needed
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Set texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Enable texture coordinates generation
+	glEnable(GL_TEXTURE_GEN_S);
+	glEnable(GL_TEXTURE_GEN_T);
+	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+
+	// Position and draw the flag
+	glTranslatef(0, 0, 600);
+	glRotatef(-90.f, 0, 1, 0);
+	glScalef(0.09, 0.09, 0.09);
+	model_flag.Draw();
+
+	// Clean up
+	glDisable(GL_TEXTURE_GEN_S);
+	glDisable(GL_TEXTURE_GEN_T);
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_BLEND);
+
+	glPopMatrix();
+}
 
 
 void LoadAssets()
@@ -1175,14 +1203,15 @@ void LoadAssets()
 	model_mcqueen.Load("Models/redcar/redcar.3DS");
 	model_policecar.Load("Models/police.3ds");
 	model_gem.Load("Models/diamond.3ds");//zbtet
-	model_mud.Load("Models/mud.3ds");
+	model_mud.Load("Models/tree/Tree1.3ds");
+	model_finish.Load("Models/finish/line.3ds");
 	// Loading texture files
 	tex_coin.Load("Textures/coin.bmp");
-	tex_ground.Load("Textures/ground.bmp");
-	tex_flag.Load("Textures/chharacter_flag.bmp");
+	tex_ground.Load("Textures/ground2.bmp");
+	//tex_flag.Load("Textures/ground.bmp");
 
 
-	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
+	//loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
 
 void main(int argc, char** argv)
