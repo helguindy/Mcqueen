@@ -101,7 +101,7 @@ Car policeCars[numPoliceCars];
 
 
 
-int timer = 60; // Countdown timer in seconds
+int timer = 60000; // Countdown timer in seconds
 
 
 void playCollisionSound() {
