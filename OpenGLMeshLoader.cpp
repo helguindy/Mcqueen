@@ -387,7 +387,7 @@ Model_3DS model_taxi;
 Model_3DS model_mcqueen;
 Model_3DS model_policecar;
 Model_3DS model_sky; // Add this with other model declarations
-//Model_3DS model_mud;
+Model_3DS model_mud;
 // Textures
 GLTexture tex_ground;
 GLTexture tex_coin;
@@ -827,14 +827,14 @@ void myDisplay(void) {
 		glPopMatrix();
 		//------------------------------
 
-		//// Draw mud model
-		//glPushMatrix();
-		//glTranslatef(3, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
-		//glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		//glScalef(0.09, 0.09, 0.09);  // Scale the car uniformly to make it bigger
-		//model_mud.Draw();
-		//glPopMatrix();
-
+		// Draw mud model
+		glPushMatrix();
+		glTranslatef(3, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
+		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		glScalef(0.9, 0.9, 0.9);  // Scale the car uniformly to make it bigger
+		model_mud.Draw();
+		glPopMatrix();
+		 
 		// Set up orthographic projection for text rendering
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
@@ -1052,7 +1052,7 @@ void LoadAssets()
 	model_mcqueen.Load("Models/mcqueen.3DS");
 	model_policecar.Load("Models/police.3ds");
 	model_gem.Load("Models/diamond.3ds");//zbtet
-	//model_mud.Load("Models/mud.3ds");
+	model_mud.Load("Models/mud.3ds");
 	// Loading texture files
 	tex_coin.Load("Textures/coin.bmp");
 	tex_ground.Load("Textures/ground.bmp");
