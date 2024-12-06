@@ -998,7 +998,13 @@ void myDisplay(void) {
 		glScalef(0.09, 0.09, 0.09);  // Scale the car uniformly to make it bigger
 		model_flag.Draw();
 		glPopMatrix();
-
+		// Draw flag model
+		glPushMatrix();
+		glTranslatef(0, 0, 1500); // Adjust Y translation to lift the car above the ground if necessary
+		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		glScalef(0.9, 9, 3);  // Scale the car uniformly to make it bigger
+		model_finish.Draw();
+		glPopMatrix();
 		//---------------------
 		glPushMatrix();
 		glEnable(GL_TEXTURE_2D);  // Enable texturing
