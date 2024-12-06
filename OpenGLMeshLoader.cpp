@@ -203,7 +203,6 @@ void checkMudCollisions() {
 }
 
 
-
 const int numGems = 5; // Number of gems
 float gemPositions[numGems][3]; // Array to store gem positions (X, Y, Z)
 
@@ -436,6 +435,7 @@ Model_3DS model_taxi;
 Model_3DS model_mcqueen;
 Model_3DS model_policecar;
 Model_3DS model_mud;
+Model_3DS model_finish;
 // Textures
 GLTexture tex_ground;
 GLTexture tex_coin;
@@ -570,7 +570,7 @@ void RenderGround()
 
 	// Set a large rectangle to simulate an infinite ground
 	float groundSize =5000.0f;  // Large ground size for the visible area
-	float textureRepeat = 500.0f; // Texture repetition factor
+	float textureRepeat = 100.0f; // Texture repetition factor
 
 	glPushMatrix();
 	glBegin(GL_QUADS);
@@ -850,6 +850,15 @@ void myDisplay(void) {
 		model_flag.Draw();
 		glPopMatrix();
 
+		// Draw flag model
+		glPushMatrix();
+		glTranslatef(0, 0, 1500); // Adjust Y translation to lift the car above the ground if necessary
+		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		glScalef(0.5, 30, 3);  // Scale the car uniformly to make it bigger
+		model_finish.Draw();
+		glPopMatrix();
+
+
 		//---------------------
 		glPushMatrix();
 		glEnable(GL_TEXTURE_2D);  // Enable texturing
@@ -1080,7 +1089,43 @@ void myReshape(int w, int h)
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
 }
 
+void DrawFlag() {
+	glPushMatrix();
 
+	// Enable texturing
+	glEnable(GL_TEXTURE_2D);
+	glBindTexture(GL_TEXTURE_2D, tex_flag.texture[0]);
+
+	// Enable blending for transparency if needed
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+	// Set texture parameters
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+	// Enable texture coordinates generation
+	glEnable(GL_TEXTURE_GEN_S);
+	glEnable(GL_TEXTURE_GEN_T);
+	glTexGeni(GL_S, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+	glTexGeni(GL_T, GL_TEXTURE_GEN_MODE, GL_OBJECT_LINEAR);
+
+	// Position and draw the flag
+	glTranslatef(0, 0, 600);
+	glRotatef(-90.f, 0, 1, 0);
+	glScalef(0.09, 0.09, 0.09);
+	model_flag.Draw();
+
+	// Clean up
+	glDisable(GL_TEXTURE_GEN_S);
+	glDisable(GL_TEXTURE_GEN_T);
+	glDisable(GL_TEXTURE_2D);
+	glDisable(GL_BLEND);
+
+	glPopMatrix();
+}
 
 
 void LoadAssets()
@@ -1094,11 +1139,12 @@ void LoadAssets()
 	model_mcqueen.Load("Models/redcar/redcar.3DS");
 	model_policecar.Load("Models/police.3ds");
 	model_gem.Load("Models/diamond.3ds");//zbtet
-	model_mud.Load("Models/mud.3ds");
+	model_mud.Load("Models/tree/Tree1.3ds");
+	model_finish.Load("Models/finish/line.3ds");
 	// Loading texture files
 	tex_coin.Load("Textures/coin.bmp");
-	tex_ground.Load("Textures/ground.bmp");
-	tex_flag.Load("Textures/chharacter_flag.bmp");
+	tex_ground.Load("Textures/ground2.bmp");
+	//tex_flag.Load("Textures/ground.bmp");
 
 
 	//loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
