@@ -30,7 +30,7 @@ float carPosY = 0.0f;
 float carPosZ = 0.0f;
 bool isJumping = false;  // Flag to track if the car is jumping
 float jumpHeight = 2.0f; // The height the car will jump
-float jumpSpeed = 0.1f;  // Speed of the jump
+float jumpSpeed = 2.1f;  // Speed of the jump
 float initialY = 0.0f;   // Store the initial Y position of the car
 float timeElapsed = 0.0f;    // Tracks time in the game
 float sunIntensity = 0.7f;  // Base intensity of the sunlight
@@ -51,7 +51,17 @@ float policeCarPositions[numPoliceCars][3]; // Array to store police car positio
 int score = 0; // Initial score
 bool scoreDoubled = false; // Flag to indicate if the score has been doubled
 bool gameWin = false; // Flag to track game win state
+float jumpProgress = 0.0f; // Progress of the jump (0 to 1)
 
+struct Car {
+	float x, y, z;
+	float alpha;
+	bool fading;
+};
+
+// Initialize your car arrays
+Car taxis[numTaxis];
+Car policeCars[numPoliceCars];
 
 
 
@@ -76,7 +86,9 @@ void updateGame(int value) {
 		timer--; // Decrement timer by 1 second
 	}
 	else {
-		timeOver = true;  // Game Over when timer reaches 0
+		if (!gameWin) { // Only set timeOver if the game has not been won 
+			timeOver = true; // Game Over when timer reaches 0 
+		}
 	}
 
 	if (timer % 2 == 0) {
@@ -87,7 +99,7 @@ void updateGame(int value) {
 	glutPostRedisplay();
 
 	// Register the timer callback again for the next second
-	if (!timeOver) {
+	if (!timeOver && !gameWin) {
 		glutTimerFunc(1000, updateGame, 0);
 	}
 }
@@ -150,8 +162,6 @@ void checkCoinCollisions() {
 }
 
 
-
-
 // Update function to decrement timer and increment score
 void update(int value) {
 	if (timer > 0) {
@@ -207,24 +217,25 @@ void setCamera() {
 	// Calculate the angle to the camera for first-person view
 	float deltaX = cameraX - carPosX;
 	float deltaZ = cameraZ - carPosZ;
-	float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / 3.14159f; // Convert to degrees
+	float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / M_PI; // Convert to degrees
 
 	switch (viewMode) {
-	case 0: // Perspective view (Third-person)
-		gluLookAt(cameraX, cameraY, cameraZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
+		{ case 0: // Third-person view (behind the car) 
+			gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 7.0f, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
+		}
 		break;
-	case 1: // Top view
-		gluLookAt(0.0, 30.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0);
+	case 1: // Top view (above the car, looking down) 
+		gluLookAt(carPosX, carPosY + 30.0f, carPosZ, carPosX, carPosY, carPosZ, 0.0, 0.0, -1.0);  
 		break;
-	case 2: // Side view
-		gluLookAt(30.0, 7.0, 0.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
-		break;
-	case 3: // Front view
-		gluLookAt(0.0, 7.0, 30.0, 0.0, 0.0, 0.0, 0.0, 1.0, 0.0);
+	case 2: // Side view (beside the car) 
+		gluLookAt(carPosX + 30.0f, carPosY + 7.0f, carPosZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector 
+	break; 
+	case 3: // Front view (in front of the car) 
+		gluLookAt(carPosX, carPosY + 7.0f, carPosZ - 30.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector
 		break;
 	case 4: // First-person view
-		gluLookAt(carPosX, carPosY + 6.5f, carPosZ , // Camera at car position
-			carPosX + sin(angleToCamera), carPosY + 6.5f, carPosZ - cos(angleToCamera), // Looking in the direction of the car
+		gluLookAt(carPosX, carPosY + 6.5f, carPosZ, // Camera at car position
+			carPosX - sin(angleToCamera * M_PI / 180.0f), carPosY + 6.5f, carPosZ + cos(angleToCamera * M_PI / 180.0f), // Looking in the opposite direction of the car
 			0.0, 1.0, 0.0); // Up vector
 		break;
 	}
@@ -237,24 +248,24 @@ void specialKeyboard(int key, int x, int y) {
 		else { moveSpeed = normalSpeed; 
 		}
 		switch (key) {
-		case GLUT_KEY_UP:    // Up arrow key
+		case GLUT_KEY_DOWN:    // Up arrow key
 			carPosZ -= moveSpeed; // Move car forward along the Z-axis
 			if (carPosZ >= 1500) { 
 				gameWin = true;
 			}
 			break;
-		case GLUT_KEY_DOWN:  // Down arrow key
+		case GLUT_KEY_UP:  // Down arrow key
 			carPosZ += moveSpeed; 
 			if (carPosZ >= 1500) {
 				gameWin = true;
 			} // Move car backward along the Z-axis
 			break;
-		case GLUT_KEY_LEFT:  // Left arrow key
+		case GLUT_KEY_RIGHT:  // Left arrow key
 			carPosX -= moveSpeed; // Move car left along the X-axis
 			cameraX += (rand() % 5 - 2) * 0.1f; 
 			cameraY += (rand() % 5 - 2) * 0.1f;
 			break;
-		case GLUT_KEY_RIGHT: // Right arrow key
+		case GLUT_KEY_LEFT: // Right arrow key
 			carPosX += moveSpeed; // Move car right along the X-axis
 			cameraX += (rand() % 5 - 2) * 0.1f;
 			cameraY += (rand() % 5 - 2) * 0.1f;
@@ -295,6 +306,9 @@ void init() {
 	glEnable(GL_LIGHTING);
 	glEnable(GL_LIGHT0);
 	initialCarPosZ = carPosZ;
+
+	glEnable(GL_BLEND); 
+	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 }
 
@@ -557,6 +571,7 @@ void checkCollisions() {
 				deltaZ /= length; 
 				carPosX += deltaX * bounceDistance; 
 				carPosZ += deltaZ * bounceDistance;
+				taxis[i].fading = true;
 				if (lives == 0) {
 					gameOver = true;
 				}
@@ -577,6 +592,7 @@ void checkCollisions() {
 				deltaZ /= length;
 				carPosX += deltaX * bounceDistance;
 				carPosZ += deltaZ * bounceDistance;
+				policeCars[i].fading = true;
 				if (lives == 0) {
 					gameOver = true;
 				}
@@ -614,33 +630,67 @@ void setGoldMaterial() {
 	glMaterialfv(GL_FRONT, GL_SPECULAR, gold_specular);
 	glMaterialfv(GL_FRONT, GL_SHININESS, gold_shininess);
 }
+void initCars() {
+	for (int i = 0; i < numTaxis; ++i) {
+		taxis[i].x = taxiPositions[i][0];
+		taxis[i].y = taxiPositions[i][1];
+		taxis[i].z = taxiPositions[i][2];
+		taxis[i].alpha = 1.0f;
+		taxis[i].fading = false;
+	}
+
+	for (int i = 0; i < numPoliceCars; ++i) {
+		policeCars[i].x = policeCarPositions[i][0];
+		policeCars[i].y = policeCarPositions[i][1];
+		policeCars[i].z = policeCarPositions[i][2];
+		policeCars[i].alpha = 1.0f;
+		policeCars[i].fading = false;
+	}
+}
+
 
 void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setCamera();
 
-	if (gameOver) { renderGameOverScreen(); }
-	else if (gameWin) { // Display "Game Win" message and score 
-		glDisable(GL_LIGHTING); 
-		glDisable(GL_DEPTH_TEST); 
-		glMatrixMode(GL_PROJECTION); 
-		glPushMatrix(); glLoadIdentity(); 
-		glOrtho(0, WIDTH, 0, HEIGHT, -1, 1); 
-		glMatrixMode(GL_MODELVIEW); 
-		glPushMatrix(); 
-		glLoadIdentity(); 
-		glColor3f(0.0f, 1.0f, 0.0f); // Green "Game Win" text 
-		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2); 
-		char* winMessage = "You Win!"; 
-		for (char* c = winMessage; *c != '\0'; c++) { 
-			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c); 
-		} 
-		glPopMatrix(); 
-		glMatrixMode(GL_PROJECTION); 
-		glPopMatrix(); 
-		glEnable(GL_DEPTH_TEST); 
-		glEnable(GL_LIGHTING); 
-	} else {
+	if (gameOver) {
+		renderGameOverScreen();
+	}
+	else if (gameWin) {
+		// Display "Game Win" message and score
+		glDisable(GL_LIGHTING);
+		glDisable(GL_DEPTH_TEST);
+		glMatrixMode(GL_PROJECTION);
+		glPushMatrix();
+		glLoadIdentity();
+		glOrtho(0, WIDTH, 0, HEIGHT, -1, 1);
+		glMatrixMode(GL_MODELVIEW);
+		glPushMatrix();
+		glLoadIdentity();
+		glColor3f(0.0f, 1.0f, 0.0f); // Green "Game Win" text
+		glRasterPos2f(WIDTH / 2 - 50, HEIGHT / 2);
+		char* winMessage = "You Win!";
+		for (char* c = winMessage; *c != '\0'; c++) {
+			glutBitmapCharacter(GLUT_BITMAP_HELVETICA_18, *c);
+		}
+		glPopMatrix();
+		glMatrixMode(GL_PROJECTION);
+		glPopMatrix();
+		glEnable(GL_DEPTH_TEST);
+		glEnable(GL_LIGHTING);
+	}
+	else {
+		// Handle jumping logic
+		if (isJumping) {
+			carPosY += jumpSpeed;
+			if (carPosY >= initialY + jumpHeight) {
+				isJumping = false; // Stop jumping when the maximum height is reached
+			}
+		}
+		else if (carPosY > initialY) {
+			carPosY -= jumpSpeed; // Bring the car back down
+		}
+
 		// Draw Ground
 		RenderGround();
 
@@ -759,7 +809,7 @@ void myDisplay(void) {
 
 		std::string timerText = "Time Left: " + std::to_string(timer);
 		std::string scoreText = "Score: " + std::to_string(score);
-		std::string distanceText = "Distance Traveled : " + std::to_string(distanceTraveledZ);
+		std::string distanceText = "Distance Traveled: " + std::to_string(distanceTraveledZ);
 		renderText(20, 60, timerText, 0.1f);
 		renderText(20, 90, scoreText, 0.1f);
 		renderText(20, 120, distanceText, 0.1f);
@@ -801,7 +851,7 @@ void myDisplay(void) {
 		glEnable(GL_LIGHTING);
 	}
 
-	if (timeOver) {
+	if (timeOver && !gameWin) {
 		glDisable(GL_LIGHTING);
 		glDisable(GL_DEPTH_TEST);
 
@@ -834,6 +884,7 @@ void myDisplay(void) {
 
 	glutSwapBuffers();
 }
+
 
 
 
@@ -897,7 +948,14 @@ void myMouse(int button, int state, int x, int y)
 		setCamera();  // Update the camera to reflect the new view
 		glutPostRedisplay();  // Redraw the scene to update the camera
 	}
+	if (button == GLUT_LEFT_BUTTON && state == GLUT_DOWN) {
+		if (!isJumping && carPosY == initialY) {
+			isJumping = true; 
+			jumpProgress = 0.0f; // Reset jump progress 
+		}
+	}
 }
+
 
 
 void myReshape(int w, int h)
