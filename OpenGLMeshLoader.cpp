@@ -66,7 +66,8 @@ float headlightStartIntensity = 0.01f; // Initial intensity (dark)
 float headlightEndIntensity = 2.0f;   // Final intensity (bright)
 float headlightCurrentIntensity = headlightStartIntensity; // Current headlight intensity
 bool needShake = false; // Global flag to control camera shake
-
+float shakeOffsetX = 0.0f, shakeOffsetY = 0.0f; // Current shake offsets
+float shakeDecay = 1.9f;
 
 // Model Variables
 Model_3DS model_house;
@@ -334,11 +335,15 @@ void InitCarLights() {
 int viewMode = 0;
 
 // Function to set up the camera
-void applyCameraShake(float& camX, float& camY, float intensity) {
-	camX += ((rand() % 21 - 10) / 10.0f) * intensity;
-	camY += ((rand() % 21 - 10) / 10.0f) * intensity;
-	std::cout << "Camera shake applied: (" << camX << ", " << camY << ")" << std::endl;
+void applyCameraShake(float& offsetX, float& offsetY, float intensity) {
+	// Generate smaller random offsets for subtle shake
+	offsetX = ((rand() % 11 - 5) / 50.0f) * intensity; // Random between -0.1 and 0.1, scaled by intensity
+	offsetY = ((rand() % 11 - 5) / 50.0f) * intensity;
+
+	// Debug information
+	std::cout << "Subtle camera shake offsets: (" << offsetX << ", " << offsetY << ")" << std::endl;
 }
+
 
 void setCamera() {
 	glMatrixMode(GL_PROJECTION);
@@ -353,23 +358,30 @@ void setCamera() {
 	float deltaZ = cameraZ - carPosZ;
 	float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / M_PI; // Convert to degrees
 
+	if (needShake) {
+		float shakeIntensity = 0.5f; // Initial intensity of the shake
+		applyCameraShake(shakeOffsetX, shakeOffsetY, shakeIntensity);
+		needShake = false; // Disable shake trigger, as it applies once per event
+	}
+
 	switch (viewMode) {
-		{ case 0: // Third-person view (behind the car) 
-			gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 7.0f, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
-		}
-				break;
-	case 1: // Top view (above the car, looking down) 
-		gluLookAt(carPosX, carPosY + 30.0f, carPosZ, carPosX, carPosY, carPosZ, 0.0, 0.0, -1.0);
+	case 0: // Third-person view
+		gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 7.0f + shakeOffsetY, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f,
+			carPosX, carPosY + 2.0f, carPosZ, 0.0, 1.0, 0.0);
 		break;
-	case 2: // Side view (beside the car) 
-		gluLookAt(carPosX + 30.0f, carPosY + 7.0f, carPosZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector 
+	case 1: // Top view
+		gluLookAt(carPosX, carPosY + 30.0f + shakeOffsetY, carPosZ, carPosX, carPosY, carPosZ, 0.0, 0.0, -1.0);
 		break;
-	case 3: // Front view (in front of the car) 
-		gluLookAt(carPosX, carPosY + 7.0f, carPosZ - 30.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector
+	case 2: // Side view
+		gluLookAt(carPosX + 30.0f + shakeOffsetX, carPosY + 7.0f + shakeOffsetY, carPosZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
+		break;
+	case 3: // Front view
+		gluLookAt(carPosX, carPosY + 7.0f + shakeOffsetY, carPosZ - 30.0f + shakeOffsetX,
+			carPosX, carPosY + 2.0f, carPosZ, 0.0, 1.0, 0.0);
 		break;
 	case 4: // First-person view
-		gluLookAt(carPosX, carPosY + 6.5f, carPosZ, // Camera at car position
-			carPosX - sin(angleToCamera * M_PI / 180.0f), carPosY + 6.5f, carPosZ + cos(angleToCamera * M_PI / 180.0f), // Looking in the opposite direction of the car
+		gluLookAt(carPosX + shakeOffsetX, carPosY + 6.5f + shakeOffsetY, carPosZ, // Camera at car position
+			carPosX - sin(angleToCamera * M_PI / 180.0f), carPosY + 6.5f, carPosZ + cos(angleToCamera * M_PI / 180.0f), // Look direction remains the same
 			0.0, 1.0, 0.0); // Up vector
 		break;
 	}
