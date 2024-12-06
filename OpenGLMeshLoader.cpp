@@ -341,8 +341,9 @@ int viewMode = 0;
 
 // Function to set up the camera
 void applyCameraShake(float& camX, float& camY, float intensity) {
-	camX += ((rand() % 21 - 10) / 10.0f) * intensity; // Add random shake to cameraX
-	camY += ((rand() % 21 - 10) / 10.0f) * intensity; // Add random shake to cameraY
+	camX += ((rand() % 21 - 10) / 10.0f) * intensity;
+	camY += ((rand() % 21 - 10) / 10.0f) * intensity;
+	std::cout << "Camera shake applied: (" << camX << ", " << camY << ")" << std::endl;
 }
 
 void setCamera() {
@@ -367,27 +368,30 @@ void setCamera() {
 	float angleToCamera = atan2(deltaX, deltaZ) * 180.0f / M_PI; // Convert to degrees
 
 	switch (viewMode) {
-	case 0: // Third-person view (behind the car)
-		gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 15.0f, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
-		break;
-	case 1: // Top view (above the car, looking down)
+		{ case 0: // Third-person view (behind the car) 
+			gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 7.0f, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
+		}
+				break;
+	case 1: // Top view (above the car, looking down) 
 		gluLookAt(carPosX, carPosY + 30.0f, carPosZ, carPosX, carPosY, carPosZ, 0.0, 0.0, -1.0);
 		break;
-	case 2: // Side view (beside the car)
-		gluLookAt(carPosX + 30.0f + shakeX, carPosY + 7.0f + shakeY, carPosZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector
+	case 2: // Side view (beside the car) 
+		gluLookAt(carPosX + 30.0f, carPosY + 7.0f, carPosZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector 
 		break;
-	case 3: // Front view (in front of the car)
-		gluLookAt(carPosX, carPosY + 7.0f + shakeY, carPosZ - 30.0f + shakeX, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector
+	case 3: // Front view (in front of the car) 
+		gluLookAt(carPosX, carPosY + 7.0f, carPosZ - 30.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector
 		break;
 	case 4: // First-person view
-		gluLookAt(carPosX, carPosY + 8.5f + shakeY, carPosZ, // Camera at car position
-			carPosX - sin(angleToCamera * M_PI / 180.0f), carPosY + 8.0f, carPosZ + cos(angleToCamera * M_PI / 180.0f), // Looking in the opposite direction of the car
+		gluLookAt(carPosX, carPosY + 6.5f, carPosZ, // Camera at car position
+			carPosX - sin(angleToCamera * M_PI / 180.0f), carPosY + 6.5f, carPosZ + cos(angleToCamera * M_PI / 180.0f), // Looking in the opposite direction of the car
 			0.0, 1.0, 0.0); // Up vector
 		break;
 	}
 
 	needShake = false; // Reset the shake flag
 }
+
+
 
 
 void specialKeyboard(int key, int x, int y) {
@@ -421,12 +425,14 @@ void specialKeyboard(int key, int x, int y) {
 			needShake = false;
 			break;
 		case GLUT_KEY_RIGHT:  // Right arrow key
+			needShake = true;
 			carPosX -= moveSpeed; // Move car left along the X-axis
-			needShake = true; // Enable shake for left movement
+			// Enable shake for left movement
 			break;
 		case GLUT_KEY_LEFT: // Left arrow key
+			needShake = true;
 			carPosX += moveSpeed; // Move car right along the X-axis
-			needShake = true; // Enable shake for right movement
+			// Enable shake for right movement
 			break;
 		}
 	}
@@ -522,6 +528,8 @@ Vector Up(0, 1, 0);
 int cameraZoom = 0;
 
 
+
+//GLTexture tex_sky;
 
 
 //bool speedBoostActive = false; // Flag to indicate if the speed boost is active
@@ -979,15 +987,6 @@ void myDisplay(void) {
 		model_flag.Draw();
 		glPopMatrix();
 
-		// Draw flag model
-		glPushMatrix();
-		glTranslatef(0, 0, 1500); // Adjust Y translation to lift the car above the ground if necessary
-		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
-		glScalef(0.5, 30, 3);  // Scale the car uniformly to make it bigger
-		model_finish.Draw();
-		glPopMatrix();
-
-
 		//---------------------
 		glPushMatrix();
 		glEnable(GL_TEXTURE_2D);  // Enable texturing
@@ -1009,9 +1008,6 @@ void myDisplay(void) {
 		//glScalef(0.9, 0.9, 0.9);  // Scale the car uniformly to make it bigger
 		//model_mud.Draw();
 		//glPopMatrix();
-
-
-
 
 		// Set up orthographic projection for text rendering
 		glMatrixMode(GL_PROJECTION);
