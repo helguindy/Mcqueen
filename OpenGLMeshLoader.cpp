@@ -345,11 +345,12 @@ Model_3DS model_taxi;
 Model_3DS model_redcar;
 Model_3DS model_policecar;
 Model_3DS model_sky; // Add this with other model declarations
-Model_3DS model_banner;
-
+//Model_3DS model_mud;
 // Textures
 GLTexture tex_ground;
 GLTexture tex_coin;
+GLTexture tex_flag;  // Add this line
+
 //GLTexture tex_sky;
 
 
@@ -476,6 +477,7 @@ void RenderGround()
 
 	glColor3f(1, 1, 1); // Reset material color to white
 }
+
 
 void renderGameOverScreen() {
 	glClear(GL_COLOR_BUFFER_BIT); // Clear the screen
@@ -666,6 +668,7 @@ void myDisplay(void) {
 		// Draw coin model
 		for (int i = 0; i < numCoins; ++i) {
 			glPushMatrix();
+			glScalef(0.2, 0.2, 0.2);
 			glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]);
 			model_coin.Draw(); // Draw the coin
 			glPopMatrix();
@@ -696,6 +699,28 @@ void myDisplay(void) {
 		glScalef(0.09, 0.09, 0.09);  // Scale the car uniformly to make it bigger
 		model_flag.Draw();
 		glPopMatrix();
+
+		//---------------------
+		glPushMatrix();
+		glEnable(GL_TEXTURE_2D);  // Enable texturing
+		glBindTexture(GL_TEXTURE_2D, tex_flag.texture[0]);  // Bind the flag texture
+
+		glTranslatef(0, 0, 600);
+		glRotatef(-90.f, 0, 1, 0);
+		glScalef(0.09, 0.09, 0.09);
+		model_flag.Draw();
+
+		glDisable(GL_TEXTURE_2D);  // Disable texturing after drawing
+		glPopMatrix();
+		//------------------------------
+
+		//// Draw mud model
+		//glPushMatrix();
+		//glTranslatef(3, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
+		//glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
+		//glScalef(0.09, 0.09, 0.09);  // Scale the car uniformly to make it bigger
+		//model_mud.Draw();
+		//glPopMatrix();
 
 		// Set up orthographic projection for text rendering
 		glMatrixMode(GL_PROJECTION);
@@ -743,7 +768,7 @@ void myDisplay(void) {
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
 		glMatrixMode(GL_MODELVIEW);
-
+		
 		UpdateCarLights();
 		checkCoinCollisions(); // Check for coin collisions
 	}
@@ -898,21 +923,25 @@ void myReshape(int w, int h)
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
 }
 
+
+
+
 void LoadAssets()
 {
 	// Loading Model files
 	model_house.Load("Models/car/car.3DS");
 	model_tree.Load("Models/tree/Tree1.3ds");
-	model_coin.Load("Models/coin.3ds");
-	model_flag.Load("Models/flag.3ds");
+	model_coin.Load("Models/coin3.3ds");
+	model_flag.Load("Models/flagg.3ds");
 	model_taxi.Load("Models/taxi.3ds");
 	model_redcar.Load("Models/redcar/redcar.3DS");
 	model_policecar.Load("Models/police.3ds");
-	model_gem.Load("Models/gem.3ds");
-	model_banner.Load("Models/banner.3ds");
+	model_gem.Load("Models/diamond.3ds");//zbtet
+	//model_mud.Load("Models/mud.3ds");
 	// Loading texture files
 	tex_coin.Load("Textures/coin.bmp");
 	tex_ground.Load("Textures/ground.bmp");
+	tex_flag.Load("Textures/flagg.bmp");
 
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
