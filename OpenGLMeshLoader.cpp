@@ -249,7 +249,7 @@ void setCamera() {
 
 	switch (viewMode) {
 		{ case 0: // Third-person view (behind the car) 
-			gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 7.0f, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
+			gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 15.0f, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
 		}
 		break;
 	case 1: // Top view (above the car, looking down) 
@@ -262,8 +262,8 @@ void setCamera() {
 		gluLookAt(carPosX, carPosY + 7.0f, carPosZ - 30.0f, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0); // Up vector
 		break;
 	case 4: // First-person view
-		gluLookAt(carPosX, carPosY + 6.5f, carPosZ, // Camera at car position
-			carPosX - sin(angleToCamera * M_PI / 180.0f), carPosY + 6.5f, carPosZ + cos(angleToCamera * M_PI / 180.0f), // Looking in the opposite direction of the car
+		gluLookAt(carPosX, carPosY + 8.5f, carPosZ, // Camera at car position
+			carPosX - sin(angleToCamera * M_PI / 180.0f), carPosY + 8.0f, carPosZ + cos(angleToCamera * M_PI / 180.0f), // Looking in the opposite direction of the car
 			0.0, 1.0, 0.0); // Up vector
 		break;
 	}
@@ -384,7 +384,7 @@ Model_3DS model_coin;
 Model_3DS model_gem;
 Model_3DS model_flag;
 Model_3DS model_taxi;
-Model_3DS model_redcar;
+Model_3DS model_mcqueen;
 Model_3DS model_policecar;
 Model_3DS model_sky; // Add this with other model declarations
 //Model_3DS model_mud;
@@ -762,7 +762,7 @@ void myDisplay(void) {
 		glTranslatef(carPosX, carPosY, carPosZ); // Move the car to its position
 		glRotatef(angleToCamera + modelOffset, 0.0f, 1.0f, 0.0f);  // Rotate the car to face the camera
 		glScalef(3.0, 3.0, 3.0);  // Scale the car uniformly to make it bigger
-		model_redcar.Draw();      // Draw the car
+		model_mcqueen.Draw();      // Draw the car
 		glPopMatrix();
 
 		// Draw coin model
@@ -1049,14 +1049,14 @@ void LoadAssets()
 	model_coin.Load("Models/coin3.3ds");
 	model_flag.Load("Models/flagg.3ds");
 	model_taxi.Load("Models/taxi.3ds");
-	model_redcar.Load("Models/redcar/redcar.3DS");
+	model_mcqueen.Load("Models/mcqueen.3DS");
 	model_policecar.Load("Models/police.3ds");
 	model_gem.Load("Models/diamond.3ds");//zbtet
 	//model_mud.Load("Models/mud.3ds");
 	// Loading texture files
 	tex_coin.Load("Textures/coin.bmp");
 	tex_ground.Load("Textures/ground.bmp");
-	tex_flag.Load("Textures/flagg.bmp");
+	tex_flag.Load("Textures/character_flag.bmp");
 
 	loadBMP(&tex, "Textures/blu-sky-3.bmp", true);
 }
