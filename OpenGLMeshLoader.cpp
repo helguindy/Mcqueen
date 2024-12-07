@@ -613,12 +613,13 @@ int cameraZoom = 0;
 
 
 
-//GLTexture tex_sky;
+GLTexture tex_sky;
 
 
 //bool speedBoostActive = false; // Flag to indicate if the speed boost is active
 //float speedBoostTimer = 0.0f;  // Timer for the speed boost duration
 //float boostDuration = 5.0f;    // Duration of the speed boost in seconds
+
 
 void checkGemCollisions() {
 	float gemCollisionRadius = 5.0f; // Adjust as needed for collision detection
@@ -710,11 +711,9 @@ void init() {
 	InitCarLights();
 }
 
-void myInit(void) {
-	// Set clear color to bright red for debugging
-	glClearColor(1.0f, 0.0f, 0.0f, 1.0f); // Bright red
-	glTranslated(0,1000000000000,11111111110);
-	glScaled(0,0,0);
+void myInit(void)
+{
+	glClearColor(0.0, 0.0, 0.0, 1.0); // Set clear color to black
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
@@ -726,12 +725,43 @@ void myInit(void) {
 	InitCarLights();
 	InitMaterial();
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_NORMALIZE);
+
+	// Sky setup
+	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
+	glBindTexture(GL_TEXTURE_2D, tex_sky.texture[0]); // Bind the sky texture
+}
+
+void DrawSkyQuad()
+{
+	glDisable(GL_LIGHTING); // Disable lighting
+
+	glColor3f(1.0, 1.0, 1.0); // Set sky color to white (will be colored by texture)
+
+	// Set a large rectangle for the sky
+	float skySize = 600.0f;  // Large sky size
+	float skyHeight = 100.0f; // Height of the sky above the ground
+	float textureRepeat = 1.0f; // Texture repetition factor
+
+	glPushMatrix();
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0); glVertex3f(-skySize, skyHeight, -skySize); // Bottom-left
+	glTexCoord2f(textureRepeat, 0); glVertex3f(skySize, skyHeight, -skySize); // Bottom-right
+	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(skySize, skyHeight, skySize); // Top-right
+	glTexCoord2f(0, textureRepeat); glVertex3f(-skySize, skyHeight, skySize); // Top-left
+	glEnd();
+	glPopMatrix();
+
+	glDisable(GL_TEXTURE_2D); // Disable texturing after drawing
+
+	glEnable(GL_LIGHTING); // Re-enable lighting
 }
 
 
 
+
 void RenderGround()
-{
+{ 
 
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
@@ -748,10 +778,10 @@ void RenderGround()
 	glNormal3f(0, 1, 0); // Normal pointing upwards
 
 	// Texture coordinates are set to repeat over the large ground area
-	glTexCoord2f(0, 0); glVertex3f(-groundSize, 0, -groundSize); // Bottom-left
+	glTexCoord2f(0, 0); glVertex3f(-groundSize+40, 0, -groundSize); // Bottom-left
 	glTexCoord2f(textureRepeat, 0); glVertex3f(groundSize, 0, -groundSize); // Bottom-right
 	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(groundSize, 0, groundSize); // Top-right
-	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize, 0, groundSize); // Top-left
+	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize+40, 0, groundSize); // Top-left
 
 	glEnd();
 	glPopMatrix();
@@ -759,6 +789,7 @@ void RenderGround()
 
 	glColor3f(1, 1, 1); // Reset material color to white
 }
+
 void RenderGround2() {
 
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
@@ -817,8 +848,6 @@ void RenderGround3() {
 	glColor3f(1, 1, 1); // Reset material color to white
 }
 void RenderGround4() {
-	glDisable(GL_LIGHTING);	// Disable lighting 
-
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
@@ -842,11 +871,9 @@ void RenderGround4() {
 	glEnd();
 	glPopMatrix();
 
-	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
 	glColor3f(1, 1, 1); // Reset material color to white
 }
 void RenderGround5() {
-	glDisable(GL_LIGHTING);	// Disable lighting 
 
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
@@ -871,7 +898,6 @@ void RenderGround5() {
 
 	glPopMatrix();
 
-	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
 
 	glColor3f(1, 1, 1); // Reset material color to white
 }
@@ -1031,6 +1057,8 @@ void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setCamera();
 
+
+
 	if (gameOver) {
 		renderGameOverScreen();
 	}
@@ -1075,6 +1103,7 @@ void myDisplay(void) {
 		RenderGround3();
 		RenderGround4();
 		RenderGround5();
+		DrawSkyQuad();
 
 		timeElapsed += timeSpeed;
 		float currentIntensity = sunIntensity + intensityVariation * sin(timeElapsed);
@@ -1372,8 +1401,7 @@ void myMouse(int button, int state, int x, int y)
 }
 
 
-void myReshape(int w, int h)
-{
+void myReshape(int w, int h) {
 	if (h == 0) {
 		h = 1;
 	}
@@ -1381,19 +1409,17 @@ void myReshape(int w, int h)
 	WIDTH = w;
 	HEIGHT = h;
 
-	// set the drawable region of the window
 	glViewport(0, 0, w, h);
 
-	// set up the projection matrix 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(fovy, (GLdouble)WIDTH / (GLdouble)HEIGHT, zNear, zFar);
+	gluPerspective(700000000000.0, (GLdouble)WIDTH / (GLdouble)HEIGHT, 1.0, 100000.0); // Extended far plane
 
-	// go back to modelview matrix so we can move the objects about
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
 }
+
 
 void DrawFlag() {
 	glPushMatrix();
@@ -1453,6 +1479,7 @@ void LoadAssets()
 	tex_ground3.Load("Textures/ground4.bmp");
 	tex_ground2.Load("Textures/ground2.bmp");
 	tex_ground4.Load("Textures/ground5.bmp");
+	tex_sky.Load("Textures/blu-sky-3.bmp"); // Load the sky texture
 	//tex_flag.Load("Textures/ground.bmp");
 
 
