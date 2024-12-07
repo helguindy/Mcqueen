@@ -742,9 +742,9 @@ void DrawSkyQuad() {
 	glBindTexture(GL_TEXTURE_2D, tex_sky.texture[0]); // Bind the sky texture
 
 	// Set a large rectangle for the sky
-	float skySize = 400.0f; // Large sky size
-	float skyHeight = 50.0f; // Height of the sky above the ground
-	float textureRepeat = 10.0f; // Texture repetition factor
+	float skySize =50000.0f; // Large sky size
+	float skyHeight = 70.0f; // Height of the sky above the ground
+	float textureRepeat = 333.0f; // Texture repetition factor
 
 	glPushMatrix();
 	glBegin(GL_QUADS);
@@ -767,7 +767,7 @@ void DrawSkyQuad() {
 void RenderGround()
 { 
 
-	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
@@ -796,7 +796,7 @@ void RenderGround()
 
 void RenderGround2() {
 
-	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
@@ -825,7 +825,7 @@ void RenderGround2() {
 void RenderGround3() {
 	glDisable(GL_LIGHTING);	// Disable lighting 
 
-	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
@@ -852,7 +852,7 @@ void RenderGround3() {
 	glColor3f(1, 1, 1); // Reset material color to white
 }
 void RenderGround4() {
-	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
@@ -879,7 +879,7 @@ void RenderGround4() {
 }
 void RenderGround5() {
 
-	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
@@ -1068,7 +1068,7 @@ void myDisplay(void) {
 	}
 	else if (gameWin) {
 		// Display "Game Win" message and score
-		glDisable(GL_LIGHTING);
+		
 		glDisable(GL_DEPTH_TEST);
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
@@ -1087,7 +1087,7 @@ void myDisplay(void) {
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
 		glEnable(GL_DEPTH_TEST);
-		glEnable(GL_LIGHTING);
+		
 	}
 	else {
 		// Handle jumping logic
