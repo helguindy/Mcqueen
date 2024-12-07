@@ -581,7 +581,7 @@ GLuint tex;
 char title[] = "3D Model Loader Sample";
 
 // 3D Projection Options
-GLdouble fovy = 45.0;
+GLdouble fovy = 405.0;
 GLdouble aspectRatio = (GLdouble)WIDTH / (GLdouble)HEIGHT;
 GLdouble zNear = 0.1;
 GLdouble zFar = 100;
@@ -711,13 +711,15 @@ void init() {
 
 void myInit(void) {
 	// Set clear color to bright red for debugging
-	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Bright red
+	glClearColor(1.0f, 0.0f, 0.0f, 1.0f); // Bright red
+	glTranslated(0,1000000000000,11111111110);
+	glScaled(0,0,0);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y + 10, At.z, Up.x, Up.y, Up.z);
+	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
 
 	InitLightSource();
 	InitCarLights();
@@ -729,7 +731,6 @@ void myInit(void) {
 
 void RenderGround()
 {
-	glDisable(GL_LIGHTING);	// Disable lighting 
 
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
@@ -754,12 +755,10 @@ void RenderGround()
 	glEnd();
 	glPopMatrix();
 
-	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
 
 	glColor3f(1, 1, 1); // Reset material color to white
 }
 void RenderGround2() {
-	glDisable(GL_LIGHTING);	// Disable lighting 
 
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
@@ -784,7 +783,6 @@ void RenderGround2() {
 	glEnd();
 	glPopMatrix();
 
-	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
 	glColor3f(1, 1, 1); // Reset material color to white
 }
 
@@ -1053,7 +1051,7 @@ void myDisplay(void) {
 			glPushMatrix();
 			glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]);
 			glRotatef(coinRotationAngle, 0.0f, 1.0f, 0.0f);  // Rotate around Y axis
-			glScalef(0.2, 0.2, 0.2);
+			glScalef(0.7, 0.7, 0.7);
 			model_coin.Draw();
 			glPopMatrix();
 		}
@@ -1062,7 +1060,7 @@ void myDisplay(void) {
 			glPushMatrix();
 			glTranslatef(taxiPositions[i][0], taxiPositions[i][1], taxiPositions[i][2]);
 			glRotatef(-90.f, 0, 1, 0); // Rotate to make the car stand on its wheels
-			glScalef(0.059, 0.059, 0.059); // Scale the car uniformly to make it bigger
+			glScalef(0.159, 0.159, 0.159); // Scale the car uniformly to make it bigger
 			model_taxi.Draw(); // Draw the taxi
 			glPopMatrix();
 		}
@@ -1071,7 +1069,7 @@ void myDisplay(void) {
 			glPushMatrix();
 			glTranslatef(policeCarPositions[i][0], policeCarPositions[i][1], policeCarPositions[i][2]);
 			glRotatef(-90.f, 0, 1, 0); // Rotate to make the car stand on its wheels
-			glScalef(0.09, 0.09, 0.09); // Scale the car uniformly to make it bigger
+			glScalef(0.19, 0.19, 0.19); // Scale the car uniformly to make it bigger
 			model_policecar.Draw();
 			glPopMatrix();
 		}
@@ -1079,7 +1077,7 @@ void myDisplay(void) {
 		for (int i = 0; i < numGems; ++i) {
 			glPushMatrix();
 			glTranslatef(gemPositions[i][0], gemPositions[i][1], gemPositions[i][2]);
-			glScalef(0.8, 0.8, 0.8); // Scale the gem appropriately
+			glScalef(1.0, 1.0, 1.0); // Scale the gem appropriately
 			model_gem.Draw(); // Draw the gem
 			glPopMatrix();
 		}
