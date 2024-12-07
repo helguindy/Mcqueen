@@ -121,6 +121,69 @@ void playBackgroundMusic() {
 	mciSendString("play bgMusic repeat", NULL, 0, NULL);
 }
 
+
+void drawSparkle(float x, float y, float z, float size) {
+	glDisable(GL_LIGHTING);
+	glPushMatrix();
+	glTranslatef(x, 30, z);
+	glScalef(size, size, size);
+
+	glBegin(GL_TRIANGLES);
+	glColor3f(1.0f, 1.0f, 0.0f); // Yellow sparkle
+	for (int i = 0; i < 8; ++i) {
+		float angle1 = i * M_PI / 4.0f;
+		float angle2 = (i + 1) * M_PI / 4.0f;
+		glVertex3f(0.0f, 0.0f, 0.0f);
+		glVertex3f(cos(angle1), sin(angle1), 0.0f);
+		glVertex3f(cos(angle2), sin(angle2), 0.0f);
+	}
+	glEnd();
+
+	glPopMatrix();
+	glEnable(GL_LIGHTING);
+}
+
+// Timer function to handle sparkle animation
+void timerFunc(int value) {
+	// Use a small delay to create animation effect
+	static int sparkleStep = 0;
+	drawSparkle(20.0f, 5.0f, 20.0f, 0.1f + 0.02f * sparkleStep);
+	glFlush();
+
+	sparkleStep++;
+	if (sparkleStep < 10) {
+		glutTimerFunc(20, timerFunc, value); // 20 milliseconds
+	}
+}
+
+void triggerSparkleEffect(float x, float y, float z) {
+	static float sparkleX = x;
+	static float sparkleY = y;
+	static float sparkleZ = z;
+
+	sparkleX = x;
+	sparkleY = y;
+	sparkleZ = z;
+
+	// Initialize the sparkle step
+	static int sparkleStep = 0;
+	sparkleStep = 0;
+
+	// Trigger the timer function for the sparkle animation
+	glutTimerFunc(0, timerFunc, 0);
+}
+
+
+void displaySparkle(float x, float y, float z) {
+	for (int i = 0; i < 10; ++i) {
+		drawSparkle(x, y, z, 0.1f + 0.02f * i);
+		glFlush();
+		// Use a small delay to create animation effect
+		Sleep(0); // 20 milliseconds
+	}
+}
+
+
 void updateGame(int value) {
 	if (timer > 0 && !gameWin) {
 		timer--; // Decrement timer by 1 second
@@ -205,6 +268,7 @@ void checkCoinCollisions() {
 			playCollisionSound();
 			// Collision with a coin detected
 			score *= 2; // Double the score
+			triggerSparkleEffect(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]); // Show sparkle
 
 			// Remove the coin or mark it as collected
 			coinPositions[i][0] = 100000; // Move the coin out of view
@@ -386,8 +450,8 @@ void setCamera() {
 
 	switch (viewMode) {
 	case 0: // Third-person view
-		gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 10.0f + shakeOffsetY, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f,
-			carPosX, carPosY + 5.0f, carPosZ, 0.0, 1.0, 0.0);
+		gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 15.0f + shakeOffsetY, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f,
+			carPosX, carPosY + 10.0f, carPosZ, 0.0, 1.0, 0.0);
 		break;
 	case 1: // Top view
 		gluLookAt(carPosX, carPosY + 30.0f + shakeOffsetY, carPosZ, carPosX, carPosY, carPosZ, 0.0, 0.0, -1.0);
@@ -519,7 +583,7 @@ GLuint tex;
 char title[] = "3D Model Loader Sample";
 
 // 3D Projection Options
-GLdouble fovy = 45.0;
+GLdouble fovy = 405.0;
 GLdouble aspectRatio = (GLdouble)WIDTH / (GLdouble)HEIGHT;
 GLdouble zNear = 0.1;
 GLdouble zFar = 100;
@@ -550,12 +614,13 @@ int cameraZoom = 0;
 
 
 
-//GLTexture tex_sky;
+GLTexture tex_sky;
 
 
 //bool speedBoostActive = false; // Flag to indicate if the speed boost is active
 //float speedBoostTimer = 0.0f;  // Timer for the speed boost duration
 //float boostDuration = 5.0f;    // Duration of the speed boost in seconds
+
 
 void checkGemCollisions() {
 	float gemCollisionRadius = 5.0f; // Adjust as needed for collision detection
@@ -571,6 +636,7 @@ void checkGemCollisions() {
 			moveSpeed = boostedSpeed; // Apply speed boost
 			speedBoostActive = true;    // Activate speed boost
 			speedBoostTimer = boostDuration; // Reset the boost timer
+			triggerSparkleEffect(gemPositions[i][0], gemPositions[i][1], gemPositions[i][2]); // Show sparkle
 
 			// Remove the gem or mark it as collected
 			gemPositions[i][0] = 100000; // Move the gem out of view
@@ -646,8 +712,9 @@ void init() {
 	InitCarLights();
 }
 
-void myInit(void) {
-	glClearColor(0.0, 0.0, 0.0, 0.0);
+void myInit(void)
+{
+	glClearColor(0.0, 0.0, 0.0, 1.0); // Set clear color to black
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
@@ -659,12 +726,43 @@ void myInit(void) {
 	InitCarLights();
 	InitMaterial();
 	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_NORMALIZE);
+
+	// Sky setup
+	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
+	glBindTexture(GL_TEXTURE_2D, tex_sky.texture[0]); // Bind the sky texture
+}
+
+void DrawSkyQuad()
+{
+	glDisable(GL_LIGHTING); // Disable lighting
+
+	glColor3f(1.0, 1.0, 1.0); // Set sky color to white (will be colored by texture)
+
+	// Set a large rectangle for the sky
+	float skySize = 600.0f;  // Large sky size
+	float skyHeight = 100.0f; // Height of the sky above the ground
+	float textureRepeat = 1.0f; // Texture repetition factor
+
+	glPushMatrix();
+	glBegin(GL_QUADS);
+	glTexCoord2f(0, 0); glVertex3f(-skySize, skyHeight, -skySize); // Bottom-left
+	glTexCoord2f(textureRepeat, 0); glVertex3f(skySize, skyHeight, -skySize); // Bottom-right
+	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(skySize, skyHeight, skySize); // Top-right
+	glTexCoord2f(0, textureRepeat); glVertex3f(-skySize, skyHeight, skySize); // Top-left
+	glEnd();
+	glPopMatrix();
+
+	glDisable(GL_TEXTURE_2D); // Disable texturing after drawing
+
+	glEnable(GL_LIGHTING); // Re-enable lighting
 }
 
 
+
+
 void RenderGround()
-{
-	glDisable(GL_LIGHTING);	// Disable lighting 
+{ 
 
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
@@ -689,12 +787,11 @@ void RenderGround()
 	glEnd();
 	glPopMatrix();
 
-	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
 
 	glColor3f(1, 1, 1); // Reset material color to white
 }
+
 void RenderGround2() {
-	glDisable(GL_LIGHTING);	// Disable lighting 
 
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
@@ -719,7 +816,6 @@ void RenderGround2() {
 	glEnd();
 	glPopMatrix();
 
-	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
 	glColor3f(1, 1, 1); // Reset material color to white
 }
 
@@ -753,8 +849,6 @@ void RenderGround3() {
 	glColor3f(1, 1, 1); // Reset material color to white
 }
 void RenderGround4() {
-	glDisable(GL_LIGHTING);	// Disable lighting 
-
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
@@ -778,11 +872,9 @@ void RenderGround4() {
 	glEnd();
 	glPopMatrix();
 
-	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
 	glColor3f(1, 1, 1); // Reset material color to white
 }
 void RenderGround5() {
-	glDisable(GL_LIGHTING);	// Disable lighting 
 
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
@@ -807,7 +899,6 @@ void RenderGround5() {
 
 	glPopMatrix();
 
-	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
 
 	glColor3f(1, 1, 1); // Reset material color to white
 }
@@ -967,6 +1058,8 @@ void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setCamera();
 
+
+
 	if (gameOver) {
 		renderGameOverScreen();
 	}
@@ -1011,6 +1104,7 @@ void myDisplay(void) {
 		RenderGround3();
 		RenderGround4();
 		RenderGround5();
+		DrawSkyQuad();
 
 		timeElapsed += timeSpeed;
 		float currentIntensity = sunIntensity + intensityVariation * sin(timeElapsed);
@@ -1049,7 +1143,7 @@ void myDisplay(void) {
 			glPushMatrix();
 			glTranslatef(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]);
 			glRotatef(coinRotationAngle, 0.0f, 1.0f, 0.0f);  // Rotate around Y axis
-			glScalef(0.2, 0.2, 0.2);
+			glScalef(0.7, 0.7, 0.7);
 			model_coin.Draw();
 			glPopMatrix();
 		}
@@ -1058,7 +1152,7 @@ void myDisplay(void) {
 			glPushMatrix();
 			glTranslatef(taxiPositions[i][0], taxiPositions[i][1], taxiPositions[i][2]);
 			glRotatef(-90.f, 0, 1, 0); // Rotate to make the car stand on its wheels
-			glScalef(0.059, 0.059, 0.059); // Scale the car uniformly to make it bigger
+			glScalef(0.159, 0.159, 0.159); // Scale the car uniformly to make it bigger
 			model_taxi.Draw(); // Draw the taxi
 			glPopMatrix();
 		}
@@ -1067,7 +1161,7 @@ void myDisplay(void) {
 			glPushMatrix();
 			glTranslatef(policeCarPositions[i][0], policeCarPositions[i][1], policeCarPositions[i][2]);
 			glRotatef(-90.f, 0, 1, 0); // Rotate to make the car stand on its wheels
-			glScalef(0.09, 0.09, 0.09); // Scale the car uniformly to make it bigger
+			glScalef(0.19, 0.19, 0.19); // Scale the car uniformly to make it bigger
 			model_policecar.Draw();
 			glPopMatrix();
 		}
@@ -1075,7 +1169,7 @@ void myDisplay(void) {
 		for (int i = 0; i < numGems; ++i) {
 			glPushMatrix();
 			glTranslatef(gemPositions[i][0], gemPositions[i][1], gemPositions[i][2]);
-			glScalef(0.8, 0.8, 0.8); // Scale the gem appropriately
+			glScalef(1.0, 1.0, 1.0); // Scale the gem appropriately
 			model_gem.Draw(); // Draw the gem
 			glPopMatrix();
 		}
@@ -1309,8 +1403,7 @@ void myMouse(int button, int state, int x, int y)
 }
 
 
-void myReshape(int w, int h)
-{
+void myReshape(int w, int h) {
 	if (h == 0) {
 		h = 1;
 	}
@@ -1318,19 +1411,17 @@ void myReshape(int w, int h)
 	WIDTH = w;
 	HEIGHT = h;
 
-	// set the drawable region of the window
 	glViewport(0, 0, w, h);
 
-	// set up the projection matrix 
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(fovy, (GLdouble)WIDTH / (GLdouble)HEIGHT, zNear, zFar);
+	gluPerspective(700000000000.0, (GLdouble)WIDTH / (GLdouble)HEIGHT, 1.0, 100000.0); // Extended far plane
 
-	// go back to modelview matrix so we can move the objects about
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
 	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
 }
+
 
 void DrawFlag() {
 	glPushMatrix();
@@ -1390,6 +1481,7 @@ void LoadAssets()
 	tex_ground3.Load("Textures/ground4.bmp");
 	tex_ground2.Load("Textures/ground2.bmp");
 	tex_ground4.Load("Textures/ground5.bmp");
+	tex_sky.Load("Textures/blu-sky-3.bmp"); // Load the sky texture
 	//tex_flag.Load("Textures/ground.bmp");
 
 
@@ -1444,42 +1536,3 @@ void main(int argc, char** argv)
 	glutMainLoop();
 }
 
-// demiana
-// texture gems cars muds finish line 
-// //coins double score ################################################
-//collesion with any collectible and the car ##################################
-// odstecle in environment 1 cars #####################################
-// collision with any obstical lose one life  and make a sound effect #################################
-// player has 3 lives ############################################################
-// if player lose all lifes game end  ##################################################################
-//set collectables and obstecalles position ################### 
-// 
-// 
-// 
-// 
-// 
-// rahma
-// camera shake when  the car get left or right for 1 sec ##############################
-// when i exceed the flag speed up ##########################################
-//display distance  ###############################################
-//z<100 1k first environment ################################
-//z=100 flage  ####################################################
-//z>100 display environment 2 ########################################
-//z=2oo 2k finish line game win timer stop 
-//  set camera and their animations 
-// game win #########################################################
-// 
-// 
-// 
-// 
-// habiba
-// make two environment 
-// start point 
-//end point
-// car lights
-//environment 1 
-//display score increase by one every two seconds ####################################
-//timer  1 min ##########################################
-// game over #######################################
-// environment 2 new obsistecale slow dowm for 10 sec and new collectable  
-//
