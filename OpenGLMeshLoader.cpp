@@ -357,7 +357,7 @@ void update(int value) {
 	if (timer > 0) {
 		timer--; // Decrement the timer
 		score++;
-		float timeFraction = 1.0f - static_cast<float>(timer) / 60.0f; // Assuming timer starts at 60 
+		float timeFraction = 1.0f - static_cast<float>(timer) / 180.0f; // Assuming timer starts at 60 
 		currentLightIntensity = startLightIntensity * (1.0f - timeFraction) + endLightIntensity * timeFraction;
 		headlightCurrentIntensity = headlightStartIntensity * (1.0f - timeFraction) + headlightEndIntensity * timeFraction;
 		coinRotationAngle += COIN_ROTATION_SPEED;
@@ -716,7 +716,7 @@ void init() {
 }
 
 void myInit(void) {
-	glClearColor(0.0, 0.0, 0.0, 1.0); // Set clear color to black
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
@@ -734,16 +734,16 @@ void myInit(void) {
 }
 
 void DrawSkyQuad() {
-	glDisable(GL_LIGHTING); // Disable lighting
+	//glDisable(GL_LIGHTING);    // Disable lighting
 
-	glColor3f(1.0, 1.0, 1.0); // Set sky color to white (will be colored by texture)
+	glColor3f(1.0, 1.0, 1.0);  // Set sky color to white (will be colored by texture)
 
-	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
+	glEnable(GL_TEXTURE_2D);   // Enable 2D texturing
 	glBindTexture(GL_TEXTURE_2D, tex_sky.texture[0]); // Bind the sky texture
 
-	// Set a large rectangle for the sky
-	float skySize =50000.0f; // Large sky size
-	float skyHeight = 70.0f; // Height of the sky above the ground
+	// Adjusted settings for clearer sky texture
+	float skySize = 50000.0f;    // Large sky size
+	float skyHeight = 70.0f;  // Height of the sky above the ground
 	float textureRepeat = 333.0f; // Texture repetition factor
 
 	glPushMatrix();
@@ -755,24 +755,25 @@ void DrawSkyQuad() {
 	glEnd();
 	glPopMatrix();
 
-	glDisable(GL_TEXTURE_2D); // Disable texturing after drawing
+	glDisable(GL_TEXTURE_2D);  // Disable texturing after drawing
 
-	glEnable(GL_LIGHTING); // Re-enable lighting
+	//glEnable(GL_LIGHTING);    // Re-enable lighting
 }
 
 
 
 
 
-void RenderGround()
-{ 
 
-	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+void RenderGround()
+{
+
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
 	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]);	// Bind the ground texture
-	
+
 	// Set a large rectangle to simulate an infinite ground
 	float groundSize = 600.0f;  // Large ground size for the visible area
 	float textureRepeat = 30.0f; // Texture repetition factor
@@ -782,10 +783,10 @@ void RenderGround()
 	glNormal3f(0, 1, 0); // Normal pointing upwards
 
 	// Texture coordinates are set to repeat over the large ground area
-	glTexCoord2f(0, 0); glVertex3f(-groundSize+40, 0, -groundSize); // Bottom-left
+	glTexCoord2f(0, 0); glVertex3f(-groundSize + 40, 0, -groundSize); // Bottom-left
 	glTexCoord2f(textureRepeat, 0); glVertex3f(groundSize, 0, -groundSize); // Bottom-right
 	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(groundSize, 0, groundSize); // Top-right
-	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize+40, 0, groundSize); // Top-left
+	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize + 40, 0, groundSize); // Top-left
 
 	glEnd();
 	glPopMatrix();
@@ -796,7 +797,7 @@ void RenderGround()
 
 void RenderGround2() {
 
-	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
@@ -825,7 +826,7 @@ void RenderGround2() {
 void RenderGround3() {
 	glDisable(GL_LIGHTING);	// Disable lighting 
 
-	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
@@ -852,7 +853,7 @@ void RenderGround3() {
 	glColor3f(1, 1, 1); // Reset material color to white
 }
 void RenderGround4() {
-	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
@@ -879,7 +880,7 @@ void RenderGround4() {
 }
 void RenderGround5() {
 
-	//glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
@@ -969,7 +970,7 @@ float distance(float x1, float z1, float x2, float z2) {
 void checkCollisions() {
 	if (gameOver) return;
 
-	float collisionRadius = 7.0f;
+	float collisionRadius = 15.0f;
 
 	// Check collisions with taxis
 	for (int i = 0; i < numTaxis; ++i) {
@@ -1068,7 +1069,7 @@ void myDisplay(void) {
 	}
 	else if (gameWin) {
 		// Display "Game Win" message and score
-		
+		glDisable(GL_LIGHTING);
 		glDisable(GL_DEPTH_TEST);
 		glMatrixMode(GL_PROJECTION);
 		glPushMatrix();
@@ -1087,7 +1088,7 @@ void myDisplay(void) {
 		glMatrixMode(GL_PROJECTION);
 		glPopMatrix();
 		glEnable(GL_DEPTH_TEST);
-		
+		glEnable(GL_LIGHTING);
 	}
 	else {
 		// Handle jumping logic
@@ -1107,7 +1108,7 @@ void myDisplay(void) {
 		RenderGround3();
 		RenderGround4();
 		RenderGround5();
-		
+
 
 		timeElapsed += timeSpeed;
 		float currentIntensity = sunIntensity + intensityVariation * sin(timeElapsed);
@@ -1188,7 +1189,7 @@ void myDisplay(void) {
 
 		// Draw flag model
 		glPushMatrix();
-		glColor3f(1.0f, 0.0f, 0.0f); // Green "Game Win" text
+		glColor3f(1.0f, 1.0f, 1.0f); // Green "Game Win" text
 		glTranslatef(-25, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
 		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
 		glScalef(0.09, 0.09, 0.09);  // Scale the car uniformly to make it bigger
@@ -1207,7 +1208,7 @@ void myDisplay(void) {
 		glEnable(GL_TEXTURE_2D);  // Enable texturing
 		glBindTexture(GL_TEXTURE_2D, tex_flag.texture[0]);  // Bind the flag texture
 
-		glColor3f(0.0f, 1.0f, 0.0f); // Green "Game Win" text
+		glColor3f(0.0f, 0.0f, 0.0f); // Green "Game Win" text
 		glTranslatef(25, 0, 600);
 		glRotatef(-90.f, 0, 1, 0);
 		glScalef(0.09, 0.09, 0.09);
@@ -1539,4 +1540,3 @@ void main(int argc, char** argv)
 
 	glutMainLoop();
 }
-
