@@ -86,6 +86,7 @@ Model_3DS model_mud;
 GLTexture tex_ground;
 GLTexture tex_ground2;
 GLTexture tex_ground3;
+GLTexture tex_ground4;
 GLTexture tex_coin;
 GLTexture tex_flag;  // Add this line
 
@@ -815,6 +816,65 @@ void RenderGround3() {
 	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
 	glColor3f(1, 1, 1); // Reset material color to white
 }
+void RenderGround4() {
+	glDisable(GL_LIGHTING);	// Disable lighting 
+
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+
+	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+
+	glBindTexture(GL_TEXTURE_2D, tex_ground4.texture[0]);	// Bind the fourth ground texture
+
+	// Define the ground parameters
+	float textureRepeat = 5.0f; // Texture repetition factor
+	float heightOffset = 0.5f;  // Raise Ground 4 slightly above Ground 1
+
+	glPushMatrix();
+	glBegin(GL_QUADS);
+	glNormal3f(0, 1, 0); // Normal pointing upwards
+
+	// Ground 4 Vertex Positions (raised above Ground 1)
+	glTexCoord2f(0, 0); glVertex3f(25, heightOffset, -50);    // Bottom-left corner (x=20, z=0)
+	glTexCoord2f(textureRepeat, 0); glVertex3f(100, heightOffset, -50); // Bottom-right corner (x=100, z=0)
+	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(100, heightOffset, 2000); // Top-right corner (x=100, z=200)
+	glTexCoord2f(0, textureRepeat); glVertex3f(25, heightOffset, 2000);  // Top-left corner (x=20, z=200)
+
+	glEnd();
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
+	glColor3f(1, 1, 1); // Reset material color to white
+}
+void RenderGround5() {
+	glDisable(GL_LIGHTING);	// Disable lighting 
+
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+
+	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+
+	glBindTexture(GL_TEXTURE_2D, tex_ground4.texture[0]);	// Bind the fifth ground texture
+
+	// Define the ground parameters
+	float textureRepeat = 5.0f; // Texture repetition factor
+	float heightOffset = 0.5f;  // Raise Ground 5 slightly above other grounds if needed
+
+	glPushMatrix();
+
+	// Draw the quad for Ground 5
+	glBegin(GL_QUADS);
+	glNormal3f(0, 1, 0); // Normal pointing upwards
+	glTexCoord2f(0, 0); glVertex3f(-25, heightOffset, -50);    // Bottom-left corner (x=-20, z=0)
+	glTexCoord2f(textureRepeat, 0); glVertex3f(-100, heightOffset, -50); // Bottom-right corner (x=-100, z=0)
+	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(-100, heightOffset, 2000); // Top-right corner (x=-100, z=200)
+	glTexCoord2f(0, textureRepeat); glVertex3f(-25, heightOffset, 2000);  // Top-left corner (x=-20, z=200)
+	glEnd();
+
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
+
+	glColor3f(1, 1, 1); // Reset material color to white
+}
 
 
 void renderGameOverScreen() {
@@ -1013,6 +1073,8 @@ void myDisplay(void) {
 		RenderGround();
 		RenderGround2();
 		RenderGround3();
+		RenderGround4();
+		RenderGround5();
 
 		timeElapsed += timeSpeed;
 		float currentIntensity = sunIntensity + intensityVariation * sin(timeElapsed);
@@ -1390,6 +1452,7 @@ void LoadAssets()
 	tex_ground.Load("Textures/ground3.bmp");
 	tex_ground3.Load("Textures/ground4.bmp");
 	tex_ground2.Load("Textures/ground2.bmp");
+	tex_ground4.Load("Textures/ground5.bmp");
 	//tex_flag.Load("Textures/ground.bmp");
 
 
