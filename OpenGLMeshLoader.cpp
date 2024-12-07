@@ -670,7 +670,7 @@ void RenderGround()
 
 	// Set a large rectangle to simulate an infinite ground
 	float groundSize = 600.0f;  // Large ground size for the visible area
-	float textureRepeat = 100.0f; // Texture repetition factor
+	float textureRepeat = 50.0f; // Texture repetition factor
 
 	glPushMatrix();
 	glBegin(GL_QUADS);
@@ -1292,7 +1292,7 @@ void LoadAssets()
 	model_finish.Load("Models/finish/line.3ds");
 	// Loading texture files
 	tex_coin.Load("Textures/coin.bmp");
-	tex_ground.Load("Textures/ground2.bmp");
+	tex_ground.Load("Textures/ground3.bmp");
 	//tex_flag.Load("Textures/ground.bmp");
 
 
