@@ -970,7 +970,7 @@ float distance(float x1, float z1, float x2, float z2) {
 void checkCollisions() {
 	if (gameOver) return;
 
-	float collisionRadius = 7.0f;
+	float collisionRadius = 15.0f;
 
 	// Check collisions with taxis
 	for (int i = 0; i < numTaxis; ++i) {
