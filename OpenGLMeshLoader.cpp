@@ -43,7 +43,7 @@ bool timeOver = false;
 float normalSpeed = 1.0f; // Normal speed of the car
 float increasedSpeed = 1.7f; // Increased speed after Z = 600
 float moveSpeed = normalSpeed; // Initial move speed
-const int numCoins = 10; // Number of coins
+const int numCoins = 20; // Number of coins
 float coinPositions[numCoins][3]; // Array to store coin positions (X, Y, Z)
 const int numTaxis = 10; // Number of taxis
 const int numPoliceCars = 10; // Number of police cars
@@ -102,7 +102,7 @@ Car policeCars[numPoliceCars];
 
 
 
-int timer = 60000; // Countdown timer in seconds
+int timer = 60; // Countdown timer in seconds
 
 
 void playCollisionSound() {
@@ -241,9 +241,9 @@ void drawCircle(float cx, float cy, float r, int num_segments) {
 }
 
 void drawHeadlights() {
-	float headlightXOffset = 0.5f;
-	float headlightYOffset = 0.5f;
-	float headlightZOffset = 2.5f; // Adjust to the front of the car
+	float headlightXOffset = 1.1f;
+	float headlightYOffset = 0.7f;
+	float headlightZOffset = 3.7f; // Adjust to the front of the car
 
 	// Set emission property for headlights to ensure they are always bright
 	GLfloat emission[] = { 1.0f, 1.0f, 1.0f, 1.0f }; // Bright white
@@ -382,8 +382,8 @@ void setCamera() {
 
 	switch (viewMode) {
 	case 0: // Third-person view
-		gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 7.0f + shakeOffsetY, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f,
-			carPosX, carPosY + 2.0f, carPosZ, 0.0, 1.0, 0.0);
+		gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 10.0f + shakeOffsetY, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f,
+			carPosX, carPosY + 5.0f, carPosZ, 0.0, 1.0, 0.0);
 		break;
 	case 1: // Top view
 		gluLookAt(carPosX, carPosY + 30.0f + shakeOffsetY, carPosZ, carPosX, carPosY, carPosZ, 0.0, 0.0, -1.0);
@@ -396,8 +396,8 @@ void setCamera() {
 			carPosX, carPosY + 2.0f, carPosZ, 0.0, 1.0, 0.0);
 		break;
 	case 4: // First-person view
-		gluLookAt(carPosX + shakeOffsetX, carPosY + 6.5f + shakeOffsetY, carPosZ, // Camera at car position
-			carPosX - sin(angleToCamera * M_PI / 180.0f), carPosY + 6.5f, carPosZ + cos(angleToCamera * M_PI / 180.0f), // Look direction remains the same
+		gluLookAt(carPosX + shakeOffsetX, carPosY + 8.5f + shakeOffsetY, carPosZ, // Camera at car position
+			carPosX - sin(angleToCamera * M_PI / 180.0f), carPosY + 8.5f, carPosZ + cos(angleToCamera * M_PI / 180.0f), // Look direction remains the same
 			0.0, 1.0, 0.0); // Up vector
 		break;
 	}
