@@ -81,9 +81,11 @@ Model_3DS model_mcqueen;
 Model_3DS model_policecar;
 Model_3DS model_sky; // Add this with other model declarations
 Model_3DS model_mud;
-Model_3DS model_finish;
+//Model_3DS model_finish;
 // Textures
 GLTexture tex_ground;
+GLTexture tex_ground2;
+GLTexture tex_ground3;
 GLTexture tex_coin;
 GLTexture tex_flag;  // Add this line
 
@@ -734,10 +736,10 @@ void RenderGround()
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
 	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]);	// Bind the ground texture
-
+	
 	// Set a large rectangle to simulate an infinite ground
 	float groundSize = 600.0f;  // Large ground size for the visible area
-	float textureRepeat = 50.0f; // Texture repetition factor
+	float textureRepeat = 30.0f; // Texture repetition factor
 
 	glPushMatrix();
 	glBegin(GL_QUADS);
@@ -756,38 +758,64 @@ void RenderGround()
 
 	glColor3f(1, 1, 1); // Reset material color to white
 }
-void RenderGround2()
-{
+void RenderGround2() {
 	glDisable(GL_LIGHTING);	// Disable lighting 
 
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
-	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]);	// Bind the ground texture
+	glBindTexture(GL_TEXTURE_2D, tex_ground2.texture[0]);	// Bind the second ground texture
 
-	// Set a large rectangle to simulate an infinite ground
+	// Second Ground: z = 600 to z = 1500
 	float groundSize = 600.0f;  // Large ground size for the visible area
 	float textureRepeat = 500.0f; // Texture repetition factor
-	float translationZ = 600.0f; // Translation for the second ground segment
 
 	glPushMatrix();
-	glTranslatef(0.0f, 0.0f, translationZ); // Translate the ground along the z-axis
-
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0); // Normal pointing upwards
-	// Adjust the vertex positions to start from z = 600
-	glTexCoord2f(0, 0); glVertex3f(-groundSize, 0, 600 - groundSize); // Bottom-left
-	glTexCoord2f(textureRepeat, 0); glVertex3f(groundSize, 0, 600 - groundSize); // Bottom-right
-	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(groundSize, 0, 600 + groundSize); // Top-right
-	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize, 0, 600 + groundSize); // Top-left
+
+	// Second Ground Vertex Positions
+	glTexCoord2f(0, 0); glVertex3f(-groundSize, 0, 600); // Bottom-left
+	glTexCoord2f(textureRepeat, 0); glVertex3f(groundSize, 0, 600); // Bottom-right
+	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(groundSize, 0, 1500); // Top-right
+	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize, 0, 1500); // Top-left
 
 	glEnd();
 	glPopMatrix();
 
 	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
+	glColor3f(1, 1, 1); // Reset material color to white
+}
 
-	glColor3f(1, 1, 1); // Reset material color to white
+void RenderGround3() {
+	glDisable(GL_LIGHTING);	// Disable lighting 
+
+	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
+
+	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
+
+	glBindTexture(GL_TEXTURE_2D, tex_ground3.texture[0]);	// Bind the third ground texture
+
+	// Third Ground: z = 1500 to z = 2000
+	float groundSize = 600.0f;  // Large ground size for the visible area
+	float textureRepeat = 50.0f; // Texture repetition factor
+
+	glPushMatrix();
+	glBegin(GL_QUADS);
+	glNormal3f(0, 1, 0); // Normal pointing upwards
+
+	// Third Ground Vertex Positions
+	glTexCoord2f(0, 0); glVertex3f(-groundSize, 0, 1500); // Bottom-left
+	glTexCoord2f(textureRepeat, 0); glVertex3f(groundSize, 0, 1500); // Bottom-right
+	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(groundSize, 0, 2000); // Top-right
+	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize, 0, 2000); // Top-left
+
+	glEnd();
+	glPopMatrix();
+
+	glEnable(GL_LIGHTING); // Re-enable lighting for other objects
+	glColor3f(1, 1, 1); // Reset material color to white
 }
 
 
@@ -986,6 +1014,7 @@ void myDisplay(void) {
 		// Draw Ground
 		RenderGround();
 		RenderGround2();
+		RenderGround3();
 
 		timeElapsed += timeSpeed;
 		float currentIntensity = sunIntensity + intensityVariation * sin(timeElapsed);
@@ -1076,7 +1105,8 @@ void myDisplay(void) {
 		glTranslatef(0, 0, 1500); // Adjust Y translation to lift the car above the ground if necessary
 		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
 		glScalef(0.9, 9, 3);  // Scale the car uniformly to make it bigger
-		model_finish.Draw();
+		//
+		// model_finish.Draw();
 		glPopMatrix();
 		//---------------------
 		glPushMatrix();
@@ -1356,10 +1386,12 @@ void LoadAssets()
 	model_policecar.Load("Models/police.3ds");
 	model_gem.Load("Models/diamond.3ds");//zbtet
 	model_mud.Load("Models/tree/Tree1.3ds");
-	model_finish.Load("Models/finish/line.3ds");
+	//model_finish.Load("Models/finish/line.3ds");
 	// Loading texture files
 	tex_coin.Load("Textures/coin.bmp");
 	tex_ground.Load("Textures/ground3.bmp");
+	tex_ground3.Load("Textures/ground4.bmp");
+	tex_ground2.Load("Textures/ground2.bmp");
 	//tex_flag.Load("Textures/ground.bmp");
 
 
