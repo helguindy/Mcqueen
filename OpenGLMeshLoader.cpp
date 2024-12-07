@@ -79,7 +79,7 @@ Model_3DS model_flag;
 Model_3DS model_taxi;
 Model_3DS model_mcqueen;
 Model_3DS model_policecar;
-Model_3DS model_sky; // Add this with other model declarations
+//Model_3DS model_sky; // Add this with other model declarations
 Model_3DS model_mud;
 //Model_3DS model_finish;
 // Textures
@@ -109,12 +109,13 @@ int timer = 60; // Countdown timer in seconds
 
 
 void playCollisionSound() {
-	PlaySound(TEXT("C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\collectables.wav"), NULL, SND_ASYNC);
+	PlaySound(TEXT("Models/collectables.wav"), NULL, SND_ASYNC);
 }
 
 void playBackgroundMusic() {
 	// Open the background music file
-	mciSendString("open \"C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\bgsong.wav\" type mpegvideo alias bgMusic", NULL, 0, NULL);
+	mciSendString("open \"Models\\bgsong.wav\" type mpegvideo alias bgMusic", NULL, 0, NULL);
+
 
 	// Play the music in a loop
 	mciSendString("play bgMusic repeat", NULL, 0, NULL);
@@ -1205,6 +1206,7 @@ void myDisplay(void) {
 		glEnable(GL_TEXTURE_2D);  // Enable texturing
 		glBindTexture(GL_TEXTURE_2D, tex_flag.texture[0]);  // Bind the flag texture
 
+		glColor3f(0.0f, 1.0f, 0.0f); // Green "Game Win" text
 		glTranslatef(0, 0, 600);
 		glRotatef(-90.f, 0, 1, 0);
 		glScalef(0.09, 0.09, 0.09);
