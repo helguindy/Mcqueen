@@ -423,7 +423,7 @@ void applyCameraShake(float& offsetX, float& offsetY, float intensity) {
 void setCamera() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(70.0, 16.0 / 9.0, 1.0, 50.0);
+	gluPerspective(70.0, 16.0 / 9.0, 1.0, 1000.0); // Adjusted far plane
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -469,8 +469,11 @@ void setCamera() {
 		break;
 	}
 
+	std::cout << "Camera set: viewMode=" << viewMode << " Position=(" << carPosX << ", " << carPosY << ", " << carPosZ << ")" << std::endl;
+
 	needShake = false; // Reset the shake flag
 }
+
 
 
 
@@ -1057,7 +1060,7 @@ void myDisplay(void) {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	setCamera();
 
-
+	DrawSkyQuad();
 
 	if (gameOver) {
 		renderGameOverScreen();
@@ -1103,7 +1106,7 @@ void myDisplay(void) {
 		RenderGround3();
 		RenderGround4();
 		RenderGround5();
-		DrawSkyQuad();
+		
 
 		timeElapsed += timeSpeed;
 		float currentIntensity = sunIntensity + intensityVariation * sin(timeElapsed);
