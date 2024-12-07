@@ -715,8 +715,7 @@ void init() {
 	InitCarLights();
 }
 
-void myInit(void)
-{
+void myInit(void) {
 	glClearColor(0.0, 0.0, 0.0, 1.0); // Set clear color to black
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
@@ -728,24 +727,24 @@ void myInit(void)
 	InitLightSource();
 	InitCarLights();
 	InitMaterial();
-	glEnable(GL_DEPTH_TEST);
+	glEnable(GL_DEPTH_TEST); // Ensure depth testing is enabled
 	glEnable(GL_NORMALIZE);
 
-	// Sky setup
-	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
-	glBindTexture(GL_TEXTURE_2D, tex_sky.texture[0]); // Bind the sky texture
+	// Sky setup (moved to DrawSkyQuad function to ensure it persists)
 }
 
-void DrawSkyQuad()
-{
+void DrawSkyQuad() {
 	glDisable(GL_LIGHTING); // Disable lighting
 
 	glColor3f(1.0, 1.0, 1.0); // Set sky color to white (will be colored by texture)
 
+	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
+	glBindTexture(GL_TEXTURE_2D, tex_sky.texture[0]); // Bind the sky texture
+
 	// Set a large rectangle for the sky
-	float skySize = 600.0f;  // Large sky size
-	float skyHeight = 100.0f; // Height of the sky above the ground
-	float textureRepeat = 1.0f; // Texture repetition factor
+	float skySize = 400.0f; // Large sky size
+	float skyHeight = 50.0f; // Height of the sky above the ground
+	float textureRepeat = 10.0f; // Texture repetition factor
 
 	glPushMatrix();
 	glBegin(GL_QUADS);
@@ -760,6 +759,7 @@ void DrawSkyQuad()
 
 	glEnable(GL_LIGHTING); // Re-enable lighting
 }
+
 
 
 
@@ -1188,7 +1188,8 @@ void myDisplay(void) {
 
 		// Draw flag model
 		glPushMatrix();
-		glTranslatef(0, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
+		glColor3f(1.0f, 0.0f, 0.0f); // Green "Game Win" text
+		glTranslatef(-25, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
 		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
 		glScalef(0.09, 0.09, 0.09);  // Scale the car uniformly to make it bigger
 		model_flag.Draw();
@@ -1207,7 +1208,7 @@ void myDisplay(void) {
 		glBindTexture(GL_TEXTURE_2D, tex_flag.texture[0]);  // Bind the flag texture
 
 		glColor3f(0.0f, 1.0f, 0.0f); // Green "Game Win" text
-		glTranslatef(0, 0, 600);
+		glTranslatef(25, 0, 600);
 		glRotatef(-90.f, 0, 1, 0);
 		glScalef(0.09, 0.09, 0.09);
 		model_flag.Draw();
