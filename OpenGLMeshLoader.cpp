@@ -804,7 +804,7 @@ void RenderGround2() {
 
 	// Second Ground: z = 600 to z = 1500
 	float groundSize = 600.0f;  // Large ground size for the visible area
-	float textureRepeat = 500.0f; // Texture repetition factor
+	float textureRepeat = 50.0f; // Texture repetition factor
 
 	glPushMatrix();
 	glBegin(GL_QUADS);
@@ -868,8 +868,8 @@ void RenderGround4() {
 
 	// Ground 4 Vertex Positions (raised above Ground 1)
 	glTexCoord2f(0, 0); glVertex3f(25, heightOffset, -50);    // Bottom-left corner (x=20, z=0)
-	glTexCoord2f(textureRepeat, 0); glVertex3f(100, heightOffset, -50); // Bottom-right corner (x=100, z=0)
-	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(100, heightOffset, 2000); // Top-right corner (x=100, z=200)
+	glTexCoord2f(textureRepeat, 0); glVertex3f(500, heightOffset, -50); // Bottom-right corner (x=100, z=0)
+	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(500, heightOffset, 2000); // Top-right corner (x=100, z=200)
 	glTexCoord2f(0, textureRepeat); glVertex3f(25, heightOffset, 2000);  // Top-left corner (x=20, z=200)
 
 	glEnd();
@@ -895,8 +895,8 @@ void RenderGround5() {
 	glBegin(GL_QUADS);
 	glNormal3f(0, 1, 0); // Normal pointing upwards
 	glTexCoord2f(0, 0); glVertex3f(-25, heightOffset, -50);    // Bottom-left corner (x=-20, z=0)
-	glTexCoord2f(textureRepeat, 0); glVertex3f(-100, heightOffset, -50); // Bottom-right corner (x=-100, z=0)
-	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(-100, heightOffset, 2000); // Top-right corner (x=-100, z=200)
+	glTexCoord2f(textureRepeat, 0); glVertex3f(-500, heightOffset, -50); // Bottom-right corner (x=-100, z=0)
+	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(-500, heightOffset, 2000); // Top-right corner (x=-100, z=200)
 	glTexCoord2f(0, textureRepeat); glVertex3f(-25, heightOffset, 2000);  // Top-left corner (x=-20, z=200)
 	glEnd();
 
