@@ -109,7 +109,7 @@ int timer = 60; // Countdown timer in seconds
 
 
 void playCollisionSound() {
-	PlaySound(TEXT("/collectables.wav"), NULL, SND_ASYNC);
+	PlaySound(TEXT("Models/collectables.wav"), NULL, SND_ASYNC);
 }
 
 void playBackgroundMusic() {
