@@ -357,7 +357,7 @@ void update(int value) {
 	if (timer > 0) {
 		timer--; // Decrement the timer
 		score++;
-		float timeFraction = 1.0f - static_cast<float>(timer) / 60.0f; // Assuming timer starts at 60 
+		float timeFraction = 1.0f - static_cast<float>(timer) / 180.0f; // Assuming timer starts at 60 
 		currentLightIntensity = startLightIntensity * (1.0f - timeFraction) + endLightIntensity * timeFraction;
 		headlightCurrentIntensity = headlightStartIntensity * (1.0f - timeFraction) + headlightEndIntensity * timeFraction;
 		coinRotationAngle += COIN_ROTATION_SPEED;
@@ -716,7 +716,7 @@ void init() {
 }
 
 void myInit(void) {
-	glClearColor(0.0, 0.0, 0.0, 1.0); // Set clear color to black
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
@@ -734,16 +734,16 @@ void myInit(void) {
 }
 
 void DrawSkyQuad() {
-	glDisable(GL_LIGHTING); // Disable lighting
+	//glDisable(GL_LIGHTING);    // Disable lighting
 
-	glColor3f(1.0, 1.0, 1.0); // Set sky color to white (will be colored by texture)
+	glColor3f(1.0, 1.0, 1.0);  // Set sky color to white (will be colored by texture)
 
-	glEnable(GL_TEXTURE_2D); // Enable 2D texturing
+	glEnable(GL_TEXTURE_2D);   // Enable 2D texturing
 	glBindTexture(GL_TEXTURE_2D, tex_sky.texture[0]); // Bind the sky texture
 
-	// Set a large rectangle for the sky
-	float skySize = 400.0f; // Large sky size
-	float skyHeight = 50.0f; // Height of the sky above the ground
+	// Adjusted settings for clearer sky texture
+	float skySize = 4000.0f;    // Large sky size
+	float skyHeight = 50.0f;  // Height of the sky above the ground
 	float textureRepeat = 10.0f; // Texture repetition factor
 
 	glPushMatrix();
@@ -755,10 +755,11 @@ void DrawSkyQuad() {
 	glEnd();
 	glPopMatrix();
 
-	glDisable(GL_TEXTURE_2D); // Disable texturing after drawing
+	glDisable(GL_TEXTURE_2D);  // Disable texturing after drawing
 
-	glEnable(GL_LIGHTING); // Re-enable lighting
+	//glEnable(GL_LIGHTING);    // Re-enable lighting
 }
+
 
 
 
@@ -1188,7 +1189,7 @@ void myDisplay(void) {
 
 		// Draw flag model
 		glPushMatrix();
-		glColor3f(1.0f, 0.0f, 0.0f); // Green "Game Win" text
+		glColor3f(1.0f, 1.0f, 1.0f); // Green "Game Win" text
 		glTranslatef(-25, 0, 600); // Adjust Y translation to lift the car above the ground if necessary
 		glRotatef(-90.f, 0, 1, 0); // Rotate around the X-axis to make the car stand on its wheels
 		glScalef(0.09, 0.09, 0.09);  // Scale the car uniformly to make it bigger
@@ -1207,7 +1208,7 @@ void myDisplay(void) {
 		glEnable(GL_TEXTURE_2D);  // Enable texturing
 		glBindTexture(GL_TEXTURE_2D, tex_flag.texture[0]);  // Bind the flag texture
 
-		glColor3f(0.0f, 1.0f, 0.0f); // Green "Game Win" text
+		glColor3f(0.0f, 0.0f, 0.0f); // Green "Game Win" text
 		glTranslatef(25, 0, 600);
 		glRotatef(-90.f, 0, 1, 0);
 		glScalef(0.09, 0.09, 0.09);
