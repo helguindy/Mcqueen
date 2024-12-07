@@ -117,6 +117,69 @@ void playBackgroundMusic() {
 	mciSendString("play bgMusic repeat", NULL, 0, NULL);
 }
 
+
+void drawSparkle(float x, float y, float z, float size) {
+	glDisable(GL_LIGHTING);
+	glPushMatrix();
+	glTranslatef(x, 30, z);
+	glScalef(size, size, size);
+
+	glBegin(GL_TRIANGLES);
+	glColor3f(1.0f, 1.0f, 0.0f); // Yellow sparkle
+	for (int i = 0; i < 8; ++i) {
+		float angle1 = i * M_PI / 4.0f;
+		float angle2 = (i + 1) * M_PI / 4.0f;
+		glVertex3f(0.0f, 0.0f, 0.0f);
+		glVertex3f(cos(angle1), sin(angle1), 0.0f);
+		glVertex3f(cos(angle2), sin(angle2), 0.0f);
+	}
+	glEnd();
+
+	glPopMatrix();
+	glEnable(GL_LIGHTING);
+}
+
+// Timer function to handle sparkle animation
+void timerFunc(int value) {
+	// Use a small delay to create animation effect
+	static int sparkleStep = 0;
+	drawSparkle(20.0f, 5.0f, 20.0f, 0.1f + 0.02f * sparkleStep);
+	glFlush();
+
+	sparkleStep++;
+	if (sparkleStep < 10) {
+		glutTimerFunc(20, timerFunc, value); // 20 milliseconds
+	}
+}
+
+void triggerSparkleEffect(float x, float y, float z) {
+	static float sparkleX = x;
+	static float sparkleY = y;
+	static float sparkleZ = z;
+
+	sparkleX = x;
+	sparkleY = y;
+	sparkleZ = z;
+
+	// Initialize the sparkle step
+	static int sparkleStep = 0;
+	sparkleStep = 0;
+
+	// Trigger the timer function for the sparkle animation
+	glutTimerFunc(0, timerFunc, 0);
+}
+
+
+void displaySparkle(float x, float y, float z) {
+	for (int i = 0; i < 10; ++i) {
+		drawSparkle(x, y, z, 0.1f + 0.02f * i);
+		glFlush();
+		// Use a small delay to create animation effect
+		Sleep(0); // 20 milliseconds
+	}
+}
+
+
 void updateGame(int value) {
 	if (timer > 0 && !gameWin) {
 		timer--; // Decrement timer by 1 second
@@ -201,6 +264,7 @@ void checkCoinCollisions() {
 			playCollisionSound();
 			// Collision with a coin detected
 			score *= 2; // Double the score
+			triggerSparkleEffect(coinPositions[i][0], coinPositions[i][1], coinPositions[i][2]); // Show sparkle
 
 			// Remove the coin or mark it as collected
 			coinPositions[i][0] = 100000; // Move the coin out of view
@@ -382,8 +446,8 @@ void setCamera() {
 
 	switch (viewMode) {
 	case 0: // Third-person view
-		gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 10.0f + shakeOffsetY, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f,
-			carPosX, carPosY + 5.0f, carPosZ, 0.0, 1.0, 0.0);
+		gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 15.0f + shakeOffsetY, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f,
+			carPosX, carPosY + 10.0f, carPosZ, 0.0, 1.0, 0.0);
 		break;
 	case 1: // Top view
 		gluLookAt(carPosX, carPosY + 30.0f + shakeOffsetY, carPosZ, carPosX, carPosY, carPosZ, 0.0, 0.0, -1.0);
@@ -567,6 +631,7 @@ void checkGemCollisions() {
 			moveSpeed = boostedSpeed; // Apply speed boost
 			speedBoostActive = true;    // Activate speed boost
 			speedBoostTimer = boostDuration; // Reset the boost timer
+			triggerSparkleEffect(gemPositions[i][0], gemPositions[i][1], gemPositions[i][2]); // Show sparkle
 
 			// Remove the gem or mark it as collected
 			gemPositions[i][0] = 100000; // Move the gem out of view
@@ -643,19 +708,21 @@ void init() {
 }
 
 void myInit(void) {
-	glClearColor(0.0, 0.0, 0.0, 0.0);
+	// Set clear color to bright red for debugging
+	glClearColor(0.0f, 0.0f, 0.0f, 1.0f); // Bright red
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
 	gluPerspective(fovy, aspectRatio, zNear, zFar);
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
-	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y, At.z, Up.x, Up.y, Up.z);
+	gluLookAt(Eye.x, Eye.y, Eye.z, At.x, At.y + 10, At.z, Up.x, Up.y, Up.z);
 
 	InitLightSource();
 	InitCarLights();
 	InitMaterial();
 	glEnable(GL_DEPTH_TEST);
 }
+
 
 
 void RenderGround()
@@ -1347,42 +1414,3 @@ void main(int argc, char** argv)
 	glutMainLoop();
 }
 
-// demiana
-// texture gems cars muds finish line 
-// //coins double score ################################################
-//collesion with any collectible and the car ##################################
-// odstecle in environment 1 cars #####################################
-// collision with any obstical lose one life  and make a sound effect #################################
-// player has 3 lives ############################################################
-// if player lose all lifes game end  ##################################################################
-//set collectables and obstecalles position ################### 
-// 
-// 
-// 
-// 
-// 
-// rahma
-// camera shake when  the car get left or right for 1 sec ##############################
-// when i exceed the flag speed up ##########################################
-//display distance  ###############################################
-//z<100 1k first environment ################################
-//z=100 flage  ####################################################
-//z>100 display environment 2 ########################################
-//z=2oo 2k finish line game win timer stop 
-//  set camera and their animations 
-// game win #########################################################
-// 
-// 
-// 
-// 
-// habiba
-// make two environment 
-// start point 
-//end point
-// car lights
-//environment 1 
-//display score increase by one every two seconds ####################################
-//timer  1 min ##########################################
-// game over #######################################
-// environment 2 new obsistecale slow dowm for 10 sec and new collectable  
-//
