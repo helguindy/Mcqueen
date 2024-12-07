@@ -79,7 +79,7 @@ Model_3DS model_flag;
 Model_3DS model_taxi;
 Model_3DS model_mcqueen;
 Model_3DS model_policecar;
-Model_3DS model_sky; // Add this with other model declarations
+//Model_3DS model_sky; // Add this with other model declarations
 Model_3DS model_mud;
 //Model_3DS model_finish;
 // Textures
@@ -109,12 +109,13 @@ int timer = 60; // Countdown timer in seconds
 
 
 void playCollisionSound() {
-	PlaySound(TEXT("C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\collectables.wav"), NULL, SND_ASYNC);
+	PlaySound(TEXT("/collectables.wav"), NULL, SND_ASYNC);
 }
 
 void playBackgroundMusic() {
 	// Open the background music file
-	mciSendString("open \"C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\bgsong.wav\" type mpegvideo alias bgMusic", NULL, 0, NULL);
+	mciSendString("open \"Models\\bgsong.wav\" type mpegvideo alias bgMusic", NULL, 0, NULL);
+
 
 	// Play the music in a loop
 	mciSendString("play bgMusic repeat", NULL, 0, NULL);
@@ -680,10 +681,10 @@ void RenderGround()
 	glNormal3f(0, 1, 0); // Normal pointing upwards
 
 	// Texture coordinates are set to repeat over the large ground area
-	glTexCoord2f(0, 0); glVertex3f(-groundSize, 0, -groundSize); // Bottom-left
+	glTexCoord2f(0, 0); glVertex3f(-groundSize+40, 0, -groundSize); // Bottom-left
 	glTexCoord2f(textureRepeat, 0); glVertex3f(groundSize, 0, -groundSize); // Bottom-right
 	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(groundSize, 0, groundSize); // Top-right
-	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize, 0, groundSize); // Top-left
+	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize+40, 0, groundSize); // Top-left
 
 	glEnd();
 	glPopMatrix();
@@ -1108,6 +1109,7 @@ void myDisplay(void) {
 		glEnable(GL_TEXTURE_2D);  // Enable texturing
 		glBindTexture(GL_TEXTURE_2D, tex_flag.texture[0]);  // Bind the flag texture
 
+		glColor3f(0.0f, 1.0f, 0.0f); // Green "Game Win" text
 		glTranslatef(0, 0, 600);
 		glRotatef(-90.f, 0, 1, 0);
 		glScalef(0.09, 0.09, 0.09);
