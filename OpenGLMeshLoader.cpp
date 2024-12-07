@@ -106,7 +106,7 @@ int timer = 60000; // Countdown timer in seconds
 
 
 void playCollisionSound() {
-	PlaySound(TEXT("C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\bgsong.wav"), NULL, SND_ASYNC);
+	PlaySound(TEXT("C:\\Users\\Habiba Elguindy\\Downloads\\assignment2\\OpenGL3DTemplate\\collectables.wav"), NULL, SND_ASYNC);
 }
 
 void playBackgroundMusic() {
@@ -197,6 +197,7 @@ void checkCoinCollisions() {
 		float dz = carPosZ - coinPositions[i][2];
 
 		if (dx * dx + dz * dz < coinCollisionRadius * coinCollisionRadius) {
+			playCollisionSound();
 			// Collision with a coin detected
 			score *= 2; // Double the score
 
@@ -556,6 +557,7 @@ void checkGemCollisions() {
 		float dz = carPosZ - gemPositions[i][2];
 
 		if (dx * dx + dz * dz < gemCollisionRadius * gemCollisionRadius) {
+			playCollisionSound();
 			std::cout << "Gem collected! Speed boost activated.\n";
 			// Collision with a gem detected
 			moveSpeed = boostedSpeed; // Apply speed boost
