@@ -40,8 +40,8 @@ float timeSpeed = 0.05f;    // Speed of time progression
 bool gameOver = false; // Flag to track game over state
 bool timeOver = false;
 //float moveSpeed = 1.1f;
-float normalSpeed = 1.0f; // Normal speed of the car
-float increasedSpeed = 1.7f; // Increased speed after Z = 600
+float normalSpeed = 1.5f; // Normal speed of the car
+float increasedSpeed = 2.2f; // Increased speed after Z = 600
 float moveSpeed = normalSpeed; // Initial move speed
 const int numCoins = 20; // Number of coins
 float coinPositions[numCoins][3]; // Array to store coin positions (X, Y, Z)
@@ -258,7 +258,7 @@ void generateMudPositions() {
 }
 
 void checkCoinCollisions() {
-	float coinCollisionRadius = 7.0f; // Adjust as needed for collision detection
+	float coinCollisionRadius = 9.0f; // Adjust as needed for collision detection
 
 	for (int i = 0; i < numCoins; ++i) {
 		float dx = carPosX - coinPositions[i][0];
@@ -424,7 +424,7 @@ void applyCameraShake(float& offsetX, float& offsetY, float intensity) {
 void setCamera() {
 	glMatrixMode(GL_PROJECTION);
 	glLoadIdentity();
-	gluPerspective(70.0, 16.0 / 9.0, 1.0, 1000.0); // Adjusted far plane
+	gluPerspective(70.0, 16.0 / 9.0, 1.0, 9000000.0); // Adjusted far plane
 
 	glMatrixMode(GL_MODELVIEW);
 	glLoadIdentity();
@@ -450,17 +450,17 @@ void setCamera() {
 
 	switch (viewMode) {
 	case 0: // Third-person view
-		gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 20.0f, carPosY + 15.0f + shakeOffsetY, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 20.0f,
+		gluLookAt(carPosX - sin(angleToCamera * M_PI / 180.0f) * 40.0f, carPosY + 15.0f + shakeOffsetY, carPosZ - cos(angleToCamera * M_PI / 180.0f) * 40.0f,
 			carPosX, carPosY + 10.0f, carPosZ, 0.0, 1.0, 0.0);
 		break;
 	case 1: // Top view
-		gluLookAt(carPosX, carPosY + 30.0f + shakeOffsetY, carPosZ, carPosX, carPosY, carPosZ, 0.0, 0.0, -1.0);
+		gluLookAt(carPosX, carPosY + 60.0f + shakeOffsetY, carPosZ, carPosX, carPosY, carPosZ, 0.0, 0.0, -1.0);
 		break;
 	case 2: // Side view
-		gluLookAt(carPosX + 30.0f + shakeOffsetX, carPosY + 7.0f + shakeOffsetY, carPosZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
+		gluLookAt(carPosX + 60.0f + shakeOffsetX, carPosY + 7.0f + shakeOffsetY, carPosZ, carPosX, carPosY, carPosZ, 0.0, 1.0, 0.0);
 		break;
 	case 3: // Front view
-		gluLookAt(carPosX, carPosY + 7.0f + shakeOffsetY, carPosZ - 30.0f + shakeOffsetX,
+		gluLookAt(carPosX, carPosY + 7.0f + shakeOffsetY, carPosZ - 60.0f + shakeOffsetX,
 			carPosX, carPosY + 2.0f, carPosZ, 0.0, 1.0, 0.0);
 		break;
 	case 4: // First-person view
@@ -474,6 +474,7 @@ void setCamera() {
 
 	needShake = false; // Reset the shake flag
 }
+
 
 
 
