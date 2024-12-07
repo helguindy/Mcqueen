@@ -1285,7 +1285,7 @@ void LoadAssets()
 	model_coin.Load("Models/coin3.3ds");
 	model_flag.Load("Models/flagg.3ds");
 	model_taxi.Load("Models/taxi.3ds");
-	model_mcqueen.Load("Models/redcar/redcar.3DS");
+	model_mcqueen.Load("Models/mcqueen.3DS");
 	model_policecar.Load("Models/police.3ds");
 	model_gem.Load("Models/diamond.3ds");//zbtet
 	model_mud.Load("Models/tree/Tree1.3ds");
