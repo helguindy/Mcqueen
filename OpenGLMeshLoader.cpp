@@ -162,7 +162,7 @@ void renderText(float x, float y, const std::string& text, float scale) {
 
 void generateCoinPositions() {
 	for (int i = 0; i < numCoins; ++i) {
-		coinPositions[i][0] = static_cast<float>(rand() % 41 - 30); // X: -30 to 30
+		coinPositions[i][0] = static_cast<float>(rand() % 41 - 20); // X: -30 to 30
 		coinPositions[i][1] = 1.0f;                                // Y: 0
 		coinPositions[i][2] = static_cast<float>(rand() % 1201);    // Z: 0 to 1200
 	}
@@ -170,16 +170,17 @@ void generateCoinPositions() {
 
 void generateCarPositions() {
 	for (int i = 0; i < numTaxis; ++i) {
-		taxiPositions[i][0] = static_cast<float>(rand() % 71 - 50); // X: -40 to 40
+		taxiPositions[i][0] = static_cast<float>(rand() % 41 - 20); // X: -20 to 20
 		taxiPositions[i][1] = 0.0f;                                 // Y: 0
-		taxiPositions[i][2] = static_cast<float>(rand() + 5 % 1201);    // Z: 0 to 1200
+		taxiPositions[i][2] = static_cast<float>(rand() % 1201);    // Z: 0 to 1200
 	}
 	for (int i = 0; i < numPoliceCars; ++i) {
-		policeCarPositions[i][0] = static_cast<float>(rand() % 81 - 40); // X: -40 to 40
+		policeCarPositions[i][0] = static_cast<float>(rand() % 41 - 20); // X: -20 to 20
 		policeCarPositions[i][1] = 0.0f;                                 // Y: 0
-		policeCarPositions[i][2] = static_cast<float>(rand() % 1201);    // Z: 0 to 1200
+		policeCarPositions[i][2] = static_cast<float>(rand() % 901 + 600);   // Z: 0 to 1200
 	}
 }
+
 
 void generateMudPositions() {
 	for (int i = 0; i < numMuds; ++i) {
@@ -208,7 +209,7 @@ void checkCoinCollisions() {
 }
 
 void checkMudCollisions() {
-	float mudCollisionRadiusX = 17.0f; // Collision radius for the x-axis
+	float mudCollisionRadiusX = 12.0f; // Collision radius for the x-axis
 	float mudCollisionRadiusZ = 5.0f; // Reduced collision radius for the z-axis
 
 	for (int i = 0; i < numMuds; ++i) {
@@ -438,14 +439,16 @@ void specialKeyboard(int key, int x, int y) {
 			needShake = false;
 			break;
 		case GLUT_KEY_RIGHT:  // Right arrow key
-			needShake = true;
-			carPosX -= moveSpeed; // Move car left along the X-axis
-			// Enable shake for left movement
+			if (carPosX - moveSpeed >= -20) { // Check the boundary
+				carPosX -= moveSpeed; // Move car left along the X-axis
+				needShake = true; // Enable shake for left movement
+			}
 			break;
 		case GLUT_KEY_LEFT: // Left arrow key
-			needShake = true;
-			carPosX += moveSpeed; // Move car right along the X-axis
-			// Enable shake for right movement
+			if (carPosX + moveSpeed <= 20) { // Check the boundary
+				carPosX += moveSpeed; // Move car right along the X-axis
+				needShake = true; // Enable shake for right movement
+			}
 			break;
 		}
 	}
@@ -455,6 +458,7 @@ void specialKeyboard(int key, int x, int y) {
 	setCamera(); // Update the camera to follow the car
 	glutPostRedisplay(); // Request display update after movement
 }
+
 
 
 
