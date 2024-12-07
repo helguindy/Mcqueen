@@ -743,9 +743,9 @@ void DrawSkyQuad() {
 	glBindTexture(GL_TEXTURE_2D, tex_sky.texture[0]); // Bind the sky texture
 
 	// Adjusted settings for clearer sky texture
-	float skySize = 4000.0f;    // Large sky size
-	float skyHeight = 50.0f;  // Height of the sky above the ground
-	float textureRepeat = 10.0f; // Texture repetition factor
+	float skySize = 50000.0f;    // Large sky size
+	float skyHeight = 70.0f;  // Height of the sky above the ground
+	float textureRepeat = 333.0f; // Texture repetition factor
 
 	glPushMatrix();
 	glBegin(GL_QUADS);
@@ -767,14 +767,14 @@ void DrawSkyQuad() {
 
 
 void RenderGround()
-{ 
+{
 
 	glColor3f(0.6, 0.6, 0.6);	// Dim the ground texture a bit
 
 	glEnable(GL_TEXTURE_2D);	// Enable 2D texturing
 
 	glBindTexture(GL_TEXTURE_2D, tex_ground.texture[0]);	// Bind the ground texture
-	
+
 	// Set a large rectangle to simulate an infinite ground
 	float groundSize = 600.0f;  // Large ground size for the visible area
 	float textureRepeat = 30.0f; // Texture repetition factor
@@ -784,10 +784,10 @@ void RenderGround()
 	glNormal3f(0, 1, 0); // Normal pointing upwards
 
 	// Texture coordinates are set to repeat over the large ground area
-	glTexCoord2f(0, 0); glVertex3f(-groundSize+40, 0, -groundSize); // Bottom-left
+	glTexCoord2f(0, 0); glVertex3f(-groundSize + 40, 0, -groundSize); // Bottom-left
 	glTexCoord2f(textureRepeat, 0); glVertex3f(groundSize, 0, -groundSize); // Bottom-right
 	glTexCoord2f(textureRepeat, textureRepeat); glVertex3f(groundSize, 0, groundSize); // Top-right
-	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize+40, 0, groundSize); // Top-left
+	glTexCoord2f(0, textureRepeat); glVertex3f(-groundSize + 40, 0, groundSize); // Top-left
 
 	glEnd();
 	glPopMatrix();
@@ -1109,7 +1109,7 @@ void myDisplay(void) {
 		RenderGround3();
 		RenderGround4();
 		RenderGround5();
-		
+
 
 		timeElapsed += timeSpeed;
 		float currentIntensity = sunIntensity + intensityVariation * sin(timeElapsed);
@@ -1541,4 +1541,3 @@ void main(int argc, char** argv)
 
 	glutMainLoop();
 }
-
